@@ -8,7 +8,7 @@ Aplicación web orientada a ayudar a profesionales latinoamericanos a identifica
 
 ## Estado
 
-**Fase 0 — Base técnica, arquitectura y validación del concepto**
+**Fase 1 — Autenticación y panel privado preparados**
 
 La versión actual incluye:
 
@@ -19,7 +19,12 @@ La versión actual incluye:
 - Arquitectura híbrida administrada documentada.
 - Modelo inicial de datos para usuarios, expedientes, requisitos, documentos, revisiones y trazabilidad.
 - Políticas RLS y permisos por columna para Supabase.
+- Registro, confirmación por correo, inicio y cierre de sesión mediante Supabase SSR.
+- Protección de rutas con `proxy.ts` y nueva verificación dentro del panel.
+- Panel privado inicial con consulta de expedientes del usuario.
 - Controles iniciales de privacidad y seguridad documental.
+
+La autenticación funciona cuando se configuran las variables de un proyecto Supabase. Sin credenciales, la aplicación muestra un estado seguro de configuración pendiente y no admite cuentas ni documentos.
 
 ## Arquitectura elegida
 
@@ -56,6 +61,8 @@ npm run dev
 
 Abrir `http://localhost:3000`.
 
+Sin variables Supabase, las páginas `/iniciar-sesion`, `/crear-cuenta` y `/panel` permanecen visibles en modo de configuración pendiente, pero no realizan operaciones de autenticación.
+
 ## Validación
 
 ```bash
@@ -72,7 +79,8 @@ El archivo `render.yaml` define un Web Service de Node.js en Frankfurt.
 1. En Render, seleccionar **New > Blueprint**.
 2. Elegir el repositorio `Candido25/Homologa-tu-mismo`.
 3. Confirmar la configuración detectada desde `render.yaml`.
-4. Crear el servicio.
+4. Introducir la URL y publishable key del proyecto Supabase cuando Render las solicite.
+5. Crear o actualizar el servicio.
 
 Render está configurado para desplegar la rama `main` solamente cuando las comprobaciones de CI hayan terminado correctamente.
 
@@ -80,32 +88,35 @@ Render está configurado para desplegar la rama `main` solamente cuando las comp
 
 ## Supabase
 
-Las migraciones iniciales están en `supabase/migrations/`.
+Las migraciones iniciales están en `supabase/migrations/` y la guía de activación está en [`docs/setup/supabase-auth.md`](docs/setup/supabase-auth.md).
 
-Todavía no deben aplicarse a producción sin:
+Antes de recibir usuarios externos se debe:
 
 - crear el proyecto en una región europea;
+- aplicar las migraciones en orden;
 - revisar las políticas con al menos dos usuarios de prueba;
 - comprobar que ningún secreto se expone al navegador;
-- definir retención, eliminación y respuesta a incidentes;
-- completar la evaluación jurídica antes de procesar documentos reales.
+- configurar Site URL y URL de confirmación;
+- probar registro, confirmación, acceso y cierre de sesión.
+
+La clave `service_role` no se utiliza en esta fase.
 
 ## Próximas fases
 
-1. Crear el proyecto Supabase en Europa.
-2. Integrar Supabase Auth en Next.js.
-3. Crear registro, inicio de sesión y panel privado.
-4. Sustituir el diagnóstico por un motor de reglas versionado.
-5. Crear expediente y checklist personalizado.
-6. Implementar carga directa a Storage privado.
-7. Incorporar procesamiento asíncrono de documentos.
-8. Añadir IA con proveedor intercambiable y supervisión humana.
-9. Desarrollar subsanaciones, plazos y seguimiento.
+1. Activar el proyecto Supabase europeo y ejecutar pruebas RLS.
+2. Guardar el resultado del diagnóstico como expediente del usuario.
+3. Sustituir el diagnóstico por un motor de reglas versionado.
+4. Crear checklist personalizado por país, profesión y procedimiento.
+5. Implementar carga directa a Storage privado.
+6. Incorporar procesamiento asíncrono de documentos.
+7. Añadir IA con proveedor intercambiable y supervisión humana.
+8. Desarrollar subsanaciones, plazos y seguimiento.
 
 ## Documentación
 
 - [Decisión de arquitectura](docs/architecture/ADR-001-arquitectura-plataforma.md)
 - [Privacidad y seguridad documental](docs/security/privacy-and-document-security.md)
+- [Activación de Supabase Auth](docs/setup/supabase-auth.md)
 - [Esquema inicial de Supabase](supabase/migrations/0001_initial_core.sql)
 - [Endurecimiento de permisos](supabase/migrations/0002_harden_client_permissions.sql)
 

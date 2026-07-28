@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import "./auth-dashboard.css";
 
 export const metadata: Metadata = {
   title: {
@@ -32,8 +33,9 @@ export default function RootLayout({
             <nav aria-label="Navegación principal">
               <Link href="/#como-funciona">Cómo funciona</Link>
               <Link href="/diagnostico">Diagnóstico</Link>
-              <Link className="button button-small" href="/diagnostico">
-                Empezar
+              <Link href="/iniciar-sesion">Iniciar sesión</Link>
+              <Link className="button button-small" href="/panel">
+                Mi panel
               </Link>
             </nav>
           </div>
