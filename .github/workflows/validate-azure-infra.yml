@@ -1,0 +1,38 @@
+name: Validar infraestructura Azure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/azure/**'
+      - '.github/workflows/validate-azure-infra.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infra/azure/**'
+      - '.github/workflows/validate-azure-infra.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bicep:
+    name: Compilar Bicep
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v5
+
+      - name: Instalar Bicep CLI
+        run: az bicep install
+
+      - name: Compilar plantilla principal
+        run: az bicep build --file infra/azure/main.bicep --stdout > /tmp/homologa-main.json
+
+      - name: Compilar parámetros de desarrollo
+        run: az bicep build-params --file infra/azure/parameters/dev.bicepparam --stdout > /tmp/homologa-dev-parameters.json
+
+      - name: Confirmar resultado
+        run: echo 'La infraestructura Azure compila correctamente. No se desplegaron recursos.'
