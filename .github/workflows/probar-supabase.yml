@@ -1,0 +1,65 @@
+name: Probar conexión con Supabase
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    name: Validar secretos y migraciones
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Comprobar que existen los tres secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          faltan=0
+          for variable in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_ID SUPABASE_DB_PASSWORD; do
+            if [[ -z "${!variable:-}" ]]; then
+              echo "::error::$variable no está configurado o está vacío."
+              faltan=1
+            else
+              echo "$variable: configurado"
+            fi
+          done
+          exit "$faltan"
+
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Mostrar versión de la CLI
+        run: supabase --version
+
+      - name: Validar token y proyecto
+        shell: bash
+        run: |
+          set -euo pipefail
+          archivo="$RUNNER_TEMP/supabase-projects.json"
+          supabase projects list --output json > "$archivo"
+          if ! grep -Fq "$SUPABASE_PROJECT_ID" "$archivo"; then
+            echo "::error::El token funciona, pero el Project ID no pertenece a los proyectos accesibles por esta cuenta."
+            exit 1
+          fi
+          echo "Token y Project ID validados."
+
+      - name: Validar contraseña y enlazar proyecto
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Simular migraciones sin modificar la base
+        run: supabase db push --linked --dry-run --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Resultado
+        run: echo "Los tres secretos son válidos y la simulación terminó sin aplicar cambios."
