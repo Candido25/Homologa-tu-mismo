@@ -1,0 +1,73 @@
+name: Aplicar migraciones de Supabase
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmacion:
+        description: "Escribe APLICAR para modificar la base de datos de producción"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-migrations
+  cancel-in-progress: false
+
+jobs:
+  aplicar:
+    name: Aplicar y verificar migraciones
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+    steps:
+      - name: Confirmar operación
+        shell: bash
+        env:
+          CONFIRMACION: ${{ inputs.confirmacion }}
+        run: |
+          set -euo pipefail
+          if [[ "$CONFIRMACION" != "APLICAR" ]]; then
+            echo "::error::La confirmación no coincide. No se modificó la base de datos."
+            exit 1
+          fi
+
+      - name: Descargar repositorio
+        uses: actions/checkout@v5
+
+      - name: Comprobar secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          for variable in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_ID SUPABASE_DB_PASSWORD; do
+            if [[ -z "${!variable:-}" ]]; then
+              echo "::error::$variable no está configurado o está vacío."
+              exit 1
+            fi
+          done
+          echo "Secretos configurados."
+
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Enlazar proyecto
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Simulación previa
+        run: supabase db push --linked --dry-run --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Aplicar migraciones pendientes
+        run: supabase db push --linked --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Verificar historial de migraciones
+        run: supabase migration list --linked --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Resultado
+        run: echo "Migraciones aplicadas y verificadas en el proyecto Supabase enlazado."
