@@ -11,6 +11,28 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+const statusLabels: Record<string, string> = {
+  draft: "Borrador",
+  diagnosed: "Diagnosticado",
+  collecting_documents: "Reuniendo documentos",
+  ready_for_review: "Listo para revisión",
+  submitted: "Presentado",
+  under_review: "En revisión",
+  subsanation_required: "Subsanación requerida",
+  resolved_favorable: "Resolución favorable",
+  resolved_conditional: "Resolución condicionada",
+  resolved_unfavorable: "Resolución desfavorable",
+  closed: "Cerrado",
+};
+
+const procedureLabels: Record<string, string> = {
+  homologation: "Homologación probable",
+  equivalence: "Equivalencia probable",
+  validation: "Convalidación probable",
+  professional_recognition: "Reconocimiento profesional",
+  undetermined: "Ruta por determinar",
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es", {
     day: "2-digit",
@@ -27,8 +49,8 @@ export default async function DashboardPage() {
           <span className="result-label">Configuración pendiente</span>
           <h1>El panel ya está construido</h1>
           <p>
-            Falta crear el proyecto Supabase europeo y registrar sus variables en Render. No se ha habilitado
-            ninguna carga de documentos reales.
+            Falta registrar las variables del proyecto Supabase en Render y aplicar las migraciones. No se ha
+            habilitado ninguna carga de documentos reales.
           </p>
           <Link className="button" href="/">
             Volver al inicio
@@ -90,8 +112,8 @@ export default async function DashboardPage() {
             </article>
             <article className="metric-card">
               <span>Próximo paso</span>
-              <strong>Diagnóstico</strong>
-              <small>define primero tu ruta</small>
+              <strong>{cases?.length ? "Abrir expediente" : "Diagnóstico"}</strong>
+              <small>{cases?.length ? "continúa tu ruta" : "define primero tu ruta"}</small>
             </article>
           </div>
 
@@ -101,7 +123,7 @@ export default async function DashboardPage() {
               <p>Los estados mostrados son organizativos y no representan información oficial del Ministerio.</p>
             </div>
             <Link className="button" href="/diagnostico">
-              Crear diagnóstico
+              Nuevo diagnóstico
             </Link>
           </div>
 
@@ -112,18 +134,22 @@ export default async function DashboardPage() {
           ) : cases && cases.length > 0 ? (
             <div className="case-grid">
               {cases.map((item) => (
-                <article className="case-card" key={item.id}>
-                  <div className="case-card-topline">
-                    <span className="result-label">{item.procedure_type}</span>
-                    <small>{formatDate(item.updated_at)}</small>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.degree_name}</p>
-                  <div className="case-status">
-                    <span>Estado interno</span>
-                    <strong>{item.status}</strong>
-                  </div>
-                </article>
+                <Link className="case-card-link" href={`/panel/expedientes/${item.id}`} key={item.id}>
+                  <article className="case-card">
+                    <div className="case-card-topline">
+                      <span className="result-label">
+                        {procedureLabels[item.procedure_type] || item.procedure_type}
+                      </span>
+                      <small>{formatDate(item.updated_at)}</small>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.degree_name}</p>
+                    <div className="case-status">
+                      <span>Estado interno</span>
+                      <strong>{statusLabels[item.status] || item.status}</strong>
+                    </div>
+                  </article>
+                </Link>
               ))}
             </div>
           ) : (

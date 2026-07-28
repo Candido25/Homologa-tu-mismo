@@ -1,37 +1,70 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import {
+  COUNTRY_OPTIONS,
+  type DiagnosticObjective,
+  type DiagnosticResult,
+} from "@/modules/diagnostics/evaluate";
 
-type DiagnosticResult = {
-  route: string;
-  confidence: string;
-  explanation: string;
-  nextSteps: string[];
+type DiagnosticForm = {
+  country: string;
+  degree: string;
+  objective: DiagnosticObjective;
+};
+
+type PendingDiagnostic = {
+  input: DiagnosticForm;
+  result: DiagnosticResult;
+};
+
+const initialForm: DiagnosticForm = {
+  country: "PE",
+  degree: "",
+  objective: "work",
 };
 
 export default function DiagnosticoPage() {
+  const [form, setForm] = useState<DiagnosticForm>(initialForm);
   const [result, setResult] = useState<DiagnosticResult | null>(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const pending = window.sessionStorage.getItem("homologa-pending-diagnostic");
+    if (!pending) return;
+
+    try {
+      const parsed = JSON.parse(pending) as PendingDiagnostic;
+      if (parsed?.input?.degree && parsed?.result?.route) {
+        setForm(parsed.input);
+        setResult(parsed.result);
+        setMessage("Recuperamos tu diagnóstico. Ya puedes guardarlo en tu panel.");
+      }
+    } catch {
+      window.sessionStorage.removeItem("homologa-pending-diagnostic");
+    }
+  }, []);
+
+  function rememberPending(nextResult: DiagnosticResult) {
+    const pending: PendingDiagnostic = { input: form, result: nextResult };
+    window.sessionStorage.setItem("homologa-pending-diagnostic", JSON.stringify(pending));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
+    setMessage("");
     setResult(null);
-
-    const form = new FormData(event.currentTarget);
-    const payload = {
-      country: form.get("country"),
-      degree: form.get("degree"),
-      objective: form.get("objective"),
-    };
 
     try {
       const response = await fetch("/api/diagnostico", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(form),
       });
 
       const data = await response.json();
@@ -39,11 +72,46 @@ export default function DiagnosticoPage() {
         throw new Error(data.error ?? "No fue posible procesar el diagnóstico.");
       }
 
-      setResult(data);
+      const nextResult = data as DiagnosticResult;
+      setResult(nextResult);
+      rememberPending(nextResult);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Ocurrió un error inesperado.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveAsCase() {
+    if (!result) return;
+
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/expedientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await response.json();
+
+      if (response.status === 401) {
+        rememberPending(result);
+        window.location.assign(`/iniciar-sesion?siguiente=${encodeURIComponent("/diagnostico")}`);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "No fue posible guardar el expediente.");
+      }
+
+      window.sessionStorage.removeItem("homologa-pending-diagnostic");
+      window.location.assign(`/panel/expedientes/${data.id}`);
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Ocurrió un error inesperado.");
+      setSaving(false);
     }
   }
 
@@ -66,22 +134,35 @@ export default function DiagnosticoPage() {
             <div className="field-grid">
               <div className="field">
                 <label htmlFor="country">País donde obtuviste el título</label>
-                <select id="country" name="country" required defaultValue="Perú">
-                  <option>Perú</option>
-                  <option>Chile</option>
-                  <option>Colombia</option>
-                  <option>Ecuador</option>
-                  <option>Argentina</option>
-                  <option>Bolivia</option>
-                  <option>Venezuela</option>
-                  <option>México</option>
-                  <option>Otro país</option>
+                <select
+                  id="country"
+                  name="country"
+                  required
+                  value={form.country}
+                  onChange={(event) => setForm((current) => ({ ...current, country: event.target.value }))}
+                >
+                  {COUNTRY_OPTIONS.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="field">
                 <label htmlFor="objective">¿Cuál es tu objetivo principal?</label>
-                <select id="objective" name="objective" required defaultValue="work">
+                <select
+                  id="objective"
+                  name="objective"
+                  required
+                  value={form.objective}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      objective: event.target.value as DiagnosticObjective,
+                    }))
+                  }
+                >
                   <option value="work">Ejercer mi profesión en España</option>
                   <option value="study">Continuar o completar estudios</option>
                   <option value="academic">Acreditar el nivel académico del título</option>
@@ -96,15 +177,19 @@ export default function DiagnosticoPage() {
                   name="degree"
                   required
                   minLength={3}
+                  maxLength={180}
                   placeholder="Ejemplo: Ingeniería Civil"
+                  value={form.degree}
+                  onChange={(event) => setForm((current) => ({ ...current, degree: event.target.value }))}
                 />
                 <span className="helper">Escríbelo tal como aparece en tu diploma.</span>
               </div>
             </div>
 
             {error ? <p className="error-message">{error}</p> : null}
+            {message ? <p className="notice notice-success">{message}</p> : null}
 
-            <button className="button" type="submit" disabled={loading}>
+            <button className="button" type="submit" disabled={loading || saving}>
               {loading ? "Analizando…" : "Obtener orientación preliminar"}
             </button>
           </form>
@@ -122,6 +207,9 @@ export default function DiagnosticoPage() {
                     <li key={step}>{step}</li>
                   ))}
                 </ul>
+                <button className="button diagnostic-save-button" type="button" onClick={saveAsCase} disabled={saving}>
+                  {saving ? "Guardando…" : "Guardar en mi panel"}
+                </button>
                 <p className="disclaimer">
                   La clasificación definitiva dependerá de la profesión española pretendida, el plan
                   de estudios y la normativa vigente.
@@ -132,8 +220,7 @@ export default function DiagnosticoPage() {
                 <span className="result-label">Tu resultado</span>
                 <h2>Aquí aparecerá tu ruta inicial.</h2>
                 <p>
-                  En las siguientes fases podrás guardar el diagnóstico, crear un expediente y revisar
-                  cada documento.
+                  Después podrás guardarla como expediente y continuar el proceso desde tu panel privado.
                 </p>
               </>
             )}
