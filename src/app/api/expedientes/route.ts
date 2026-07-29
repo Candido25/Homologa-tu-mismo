@@ -1,7 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { isSupabaseConfigured } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getCaseRepository,
+  getCurrentUserProvider,
+  isPrivateAreaConfigured,
+} from "@/lib/application-services";
 import {
   countryCodeForDatabase,
   evaluateDiagnostic,
@@ -19,8 +22,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
   }
 
-  if (!isSupabaseConfigured()) {
-    return NextResponse.json({ error: "La base de datos todavía no está configurada." }, { status: 503 });
+  if (!isPrivateAreaConfigured()) {
+    return NextResponse.json({ error: "La identidad o la base de datos todavía no están configuradas." }, { status: 503 });
   }
 
   let body: unknown;
@@ -35,11 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error }, { status: 422 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUserProvider().getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Debes iniciar sesión para guardar el expediente." }, { status: 401 });
   }
@@ -53,29 +52,27 @@ export async function POST(request: Request) {
     disclaimer: "Resultado preliminar y no vinculante.",
   };
 
-  const { data, error } = await supabase
-    .from("cases")
-    .insert({
-      user_id: user.id,
+  try {
+    const data = await getCaseRepository().create({
+      userId: user.id,
       title,
-      origin_country_code: countryCodeForDatabase(parsed.input.country),
-      degree_name: parsed.input.degree,
+      originCountryCode: countryCodeForDatabase(parsed.input.country),
+      degreeName: parsed.input.degree,
       objective: objectiveForDatabase(parsed.input.objective),
-      procedure_type: result.procedureType,
-      diagnostic_version: result.version,
-      diagnostic_payload: diagnosticPayload,
-    })
-    .select("id")
-    .single();
+      procedureType: result.procedureType,
+      diagnosticVersion: result.version,
+      diagnosticPayload,
+    });
 
-  if (error || !data) {
-    console.error("case_create_failed", { code: error?.code, message: error?.message });
+    revalidatePath("/panel");
+    return NextResponse.json({ id: data.id }, { status: 201 });
+  } catch (error) {
+    console.error("case_create_failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return NextResponse.json(
-      { error: "No pudimos crear el expediente. Comprueba que las migraciones estén aplicadas." },
+      { error: "No pudimos crear el expediente. Comprueba el entorno local y las migraciones." },
       { status: 500 },
     );
   }
-
-  revalidatePath("/panel");
-  return NextResponse.json({ id: data.id }, { status: 201 });
 }

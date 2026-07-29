@@ -2,7 +2,12 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getApplicationUrl, isSupabaseConfigured } from "@/lib/env";
+import {
+  getApplicationUrl,
+  getAuthProviderName,
+  isLocalTestAuthEnabled,
+  isSupabaseConfigured,
+} from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 function text(formData: FormData, field: string) {
@@ -19,13 +24,26 @@ function authRedirect(path: string, parameter: "error" | "mensaje", message: str
 }
 
 export async function signIn(formData: FormData) {
+  const nextPath = safeNextPath(text(formData, "siguiente"));
+  const provider = getAuthProviderName();
+
+  if (provider === "local-test") {
+    if (!isLocalTestAuthEnabled()) {
+      authRedirect("/iniciar-sesion", "error", "La identidad ficticia local no está configurada.");
+    }
+    redirect(nextPath);
+  }
+
+  if (provider === "entra") {
+    authRedirect("/iniciar-sesion", "error", "Microsoft Entra External ID todavía no está configurado.");
+  }
+
   if (!isSupabaseConfigured()) {
     authRedirect("/iniciar-sesion", "error", "La autenticación todavía no está configurada.");
   }
 
   const email = text(formData, "email").toLowerCase();
   const password = text(formData, "password");
-  const nextPath = safeNextPath(text(formData, "siguiente"));
 
   if (!email || password.length < 8) {
     authRedirect("/iniciar-sesion", "error", "Revisa el correo y la contraseña.");
@@ -42,6 +60,19 @@ export async function signIn(formData: FormData) {
 }
 
 export async function signUp(formData: FormData) {
+  const provider = getAuthProviderName();
+
+  if (provider === "local-test") {
+    if (!isLocalTestAuthEnabled()) {
+      authRedirect("/crear-cuenta", "error", "La identidad ficticia local no está configurada.");
+    }
+    redirect("/panel");
+  }
+
+  if (provider === "entra") {
+    authRedirect("/crear-cuenta", "error", "Microsoft Entra External ID todavía no está configurado.");
+  }
+
   if (!isSupabaseConfigured()) {
     authRedirect("/crear-cuenta", "error", "La creación de cuentas todavía no está configurada.");
   }
@@ -83,7 +114,9 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signOut() {
-  if (isSupabaseConfigured()) {
+  const provider = getAuthProviderName();
+
+  if (provider === "supabase" && isSupabaseConfigured()) {
     const supabase = await createClient();
     await supabase.auth.signOut();
   }

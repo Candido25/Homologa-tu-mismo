@@ -1,14 +1,30 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getPublicSupabaseConfig, isSupabaseConfigured } from "@/lib/env";
+import {
+  getAuthProviderName,
+  getPublicSupabaseConfig,
+  isLocalTestAuthEnabled,
+  isSupabaseConfigured,
+} from "@/lib/env";
 
 const protectedPrefixes = ["/panel", "/expedientes"];
 const authPrefixes = ["/iniciar-sesion", "/crear-cuenta"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+  const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const isAuthPage = authPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const provider = getAuthProviderName();
 
-  if (!isSupabaseConfigured()) {
+  if (provider === "local-test") {
+    if (isAuthPage && isLocalTestAuthEnabled()) {
+      return NextResponse.redirect(new URL("/panel", request.url));
+    }
+    return response;
+  }
+
+  if (provider !== "supabase" || !isSupabaseConfigured()) {
     return response;
   }
 
@@ -30,9 +46,6 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const isAuthenticated = Boolean(data?.claims?.sub);
-  const pathname = request.nextUrl.pathname;
-  const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
-  const isAuthPage = authPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (isProtected && !isAuthenticated) {
     const loginUrl = new URL("/iniciar-sesion", request.url);
