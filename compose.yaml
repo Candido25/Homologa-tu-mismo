@@ -27,6 +27,7 @@ services:
       --tableHost 0.0.0.0
       --location /data
       --debug /data/debug.log
+      --skipApiVersionCheck
       --disableTelemetry
     ports:
       - "${AZURITE_BLOB_PORT:-10000}:10000"
