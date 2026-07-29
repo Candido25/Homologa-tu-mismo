@@ -225,6 +225,7 @@ h2 {
 .preview-card {
   position: relative;
   padding: 24px;
+  padding-top: 54px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.96);
@@ -234,8 +235,8 @@ h2 {
 .preview-card::before {
   content: "Expediente inteligente";
   position: absolute;
-  top: -16px;
-  right: 22px;
+  top: 16px;
+  right: 16px;
   padding: 7px 12px;
   border-radius: 8px;
   color: #fff;
