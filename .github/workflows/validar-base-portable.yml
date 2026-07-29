@@ -1,0 +1,106 @@
+name: Validar base PostgreSQL portable
+
+on:
+  pull_request:
+    paths:
+      - "database/**"
+      - "compose.yaml"
+      - "package.json"
+      - ".github/workflows/validar-base-portable.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "database/**"
+      - "compose.yaml"
+      - "package.json"
+      - ".github/workflows/validar-base-portable.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar-postgres:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16.14-alpine3.23
+        env:
+          POSTGRES_DB: homologa
+          POSTGRES_USER: homologa
+          POSTGRES_PASSWORD: homologa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U homologa -d homologa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      PGPASSWORD: homologa_ci_only
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGDATABASE: homologa
+      PGUSER: homologa
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Aplicar migración portable
+        run: psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+
+      - name: Comprobar idempotencia
+        run: psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+
+      - name: Cargar referencias y datos ficticios
+        run: |
+          psql -v ON_ERROR_STOP=1 -f database/seeds/0001_reference_data.sql
+          psql -v ON_ERROR_STOP=1 -f database/seeds/9000_local_test_fixtures.sql
+
+      - name: Verificar estructura y propietarios
+        run: |
+          test "$(psql -Atc "select count(*) from schema_migrations where version = '0001_portable_core';")" = "1"
+          test "$(psql -Atc "select count(*) from app_users;")" = "2"
+          test "$(psql -Atc "select count(*) from cases where user_id = '00000000-0000-4000-8000-000000000001';")" = "1"
+          test "$(psql -Atc "select count(*) from cases where user_id = '00000000-0000-4000-8000-000000000002';")" = "1"
+
+      - name: Rechazar documento con propietario incorrecto
+        shell: bash
+        run: |
+          set +e
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          insert into documents (
+            case_id,
+            user_id,
+            document_type_code,
+            storage_provider,
+            storage_container,
+            storage_path,
+            original_filename,
+            mime_type,
+            size_bytes
+          ) values (
+            '10000000-0000-4000-8000-000000000001',
+            '00000000-0000-4000-8000-000000000002',
+            'degree',
+            'azurite',
+            'case-documents',
+            'invalid-owner/test.pdf',
+            'test.pdf',
+            'application/pdf',
+            10
+          );
+          SQL
+          status=$?
+          set -e
+
+          if [ "$status" -eq 0 ]; then
+            echo "La base permitió asociar un documento al propietario equivocado."
+            exit 1
+          fi
+
+          echo "La restricción de propietario funcionó correctamente."
