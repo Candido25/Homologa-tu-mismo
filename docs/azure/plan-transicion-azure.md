@@ -79,11 +79,13 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Documentar configuración OIDC de GitHub Actions para Azure Students.
 - [x] Crear workflow manual de infraestructura con `what-if`.
 - [ ] Añadir aprobación manual al GitHub Environment `development`.
-- [ ] Crear workflow de aplicación para Azure App Service.
+- [x] Preparar workflow manual OIDC para Azure App Service con artefacto verificable y health check.
+- [ ] Ejecutar el primer despliegue aprobado de la aplicación.
 - [x] Preparar workflow diario de retención con OIDC, Key Vault y resumen operativo.
 - [x] Preparar prueba manual de recuperación de un blob ficticio.
 - [ ] Ejecutar y supervisar retención y recuperación en el entorno Azure desplegado.
-- [ ] Configurar alerta por fallo o ausencia de ejecución de retención.
+- [x] Preparar alertas opt-in por fallo o ausencia de ejecución de retención.
+- [ ] Activar y probar las alertas después de la primera ejecución correcta.
 - [ ] Verificar que GitHub no almacene secretos permanentes de Azure.
 
 ### Fase 6 — Validación funcional y seguridad

@@ -42,6 +42,16 @@ param documentRetentionJobToken string = ''
 @description('Object ID de la identidad federada autorizada para ejecutar operaciones documentales.')
 param documentOperationsPrincipalId string = ''
 
+@description('Object ID de la identidad federada autorizada para desplegar la aplicación web.')
+param applicationDeploymentPrincipalId string = ''
+
+@description('Crear alertas de fallo y ausencia de retención.')
+param enableDocumentRetentionAlerts bool = false
+
+@secure()
+@description('Correo receptor de las alertas documentales.')
+param operationsAlertEmail string = ''
+
 var suffix = take(uniqueString(subscription().subscriptionId, resourceGroup().id, environment), 6)
 var normalizedProject = toLower(replace(projectName, '-', ''))
 var storageAccountName = take('st${normalizedProject}${environment}${suffix}', 24)
@@ -253,6 +263,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     clientAffinityEnabled: false
     publicNetworkAccess: 'Enabled'
     siteConfig: {
+      appCommandLine: 'node server.js'
       linuxFxVersion: 'NODE|22-lts'
       alwaysOn: !isFreePlan
       ftpsState: 'Disabled'
@@ -264,7 +275,23 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           value: 'production'
         }
         {
+          name: 'APP_ENV'
+          value: environment
+        }
+        {
+          name: 'NEXT_PUBLIC_APP_URL'
+          value: 'https://${webAppName}.azurewebsites.net'
+        }
+        {
           name: 'NEXT_TELEMETRY_DISABLED'
+          value: '1'
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'false'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1'
         }
         {
@@ -312,6 +339,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
 
 var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
+var websiteContributorRoleId = 'de139f84-1756-47ae-9be6-808fbbe84772'
 
 resource storageBlobRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles) {
   name: guid(storageAccount.id, webApp.id, storageBlobDataContributorRoleId)
@@ -350,6 +378,119 @@ resource documentOperationsSecretRole 'Microsoft.Authorization/roleAssignments@2
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
     principalId: documentOperationsPrincipalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+resource applicationDeploymentRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles && !empty(applicationDeploymentPrincipalId)) {
+  name: guid(webApp.id, applicationDeploymentPrincipalId, websiteContributorRoleId)
+  scope: webApp
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', websiteContributorRoleId)
+    principalId: applicationDeploymentPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource documentOperationsActionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = if (enableDocumentRetentionAlerts && !empty(operationsAlertEmail)) {
+  name: 'ag-${projectName}-${environment}-documents'
+  location: 'global'
+  tags: commonTags
+  properties: {
+    enabled: true
+    groupShortName: 'homologadoc'
+    emailReceivers: [
+      {
+        name: 'document-operations'
+        emailAddress: operationsAlertEmail
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
+resource documentRetentionFailureAlert 'Microsoft.Insights/scheduledQueryRules@2021-08-01' = if (enableDocumentRetentionAlerts && !empty(operationsAlertEmail)) {
+  name: 'alert-${projectName}-${environment}-document-retention-failure'
+  location: location
+  kind: 'LogAlert'
+  tags: commonTags
+  properties: {
+    displayName: 'Retención documental con errores'
+    description: 'Detecta ejecuciones o eliminaciones fallidas del proceso de retención documental.'
+    enabled: true
+    severity: 1
+    evaluationFrequency: 'PT15M'
+    windowSize: 'PT30M'
+    autoMitigate: true
+    skipQueryValidation: true
+    scopes: [
+      applicationInsights.id
+    ]
+    criteria: {
+      allOf: [
+        {
+          query: '''
+            traces
+            | where message startswith "document_retention_job_failed"
+                or message startswith "document_retention_delete_failed"
+          '''
+          timeAggregation: 'Count'
+          operator: 'GreaterThan'
+          threshold: 0
+          failingPeriods: {
+            numberOfEvaluationPeriods: 1
+            minFailingPeriodsToAlert: 1
+          }
+        }
+      ]
+    }
+    actions: {
+      actionGroups: [
+        documentOperationsActionGroup!.id
+      ]
+    }
+  }
+}
+
+resource documentRetentionMissingAlert 'Microsoft.Insights/scheduledQueryRules@2021-08-01' = if (enableDocumentRetentionAlerts && !empty(operationsAlertEmail)) {
+  name: 'alert-${projectName}-${environment}-document-retention-missing'
+  location: location
+  kind: 'LogAlert'
+  tags: commonTags
+  properties: {
+    displayName: 'Retención documental sin ejecución'
+    description: 'Detecta la ausencia de una ejecución correcta de retención durante las últimas 26 horas.'
+    enabled: true
+    severity: 2
+    evaluationFrequency: 'PT1H'
+    windowSize: 'P1D'
+    overrideQueryTimeRange: 'PT26H'
+    autoMitigate: true
+    skipQueryValidation: true
+    scopes: [
+      applicationInsights.id
+    ]
+    criteria: {
+      allOf: [
+        {
+          query: '''
+            traces
+            | where message startswith "document_retention_job_completed"
+          '''
+          timeAggregation: 'Count'
+          operator: 'LessThan'
+          threshold: 1
+          failingPeriods: {
+            numberOfEvaluationPeriods: 1
+            minFailingPeriodsToAlert: 1
+          }
+        }
+      ]
+    }
+    actions: {
+      actionGroups: [
+        documentOperationsActionGroup!.id
+      ]
+    }
   }
 }
 

@@ -26,6 +26,8 @@ La versión actual incluye:
 - Retención automática portable con vencimiento, borrado físico y auditoría mínima.
 - Automatización diaria Azure preparada con OIDC, Key Vault y métricas agregadas.
 - Prueba manual de borrado recuperable preparada para Blob Storage con archivos ficticios.
+- Despliegue manual de App Service preparado con artefacto standalone, OIDC, health check y rollback documentado.
+- Alertas Azure de retención preparadas y desactivadas hasta aprobar su coste y destinatario.
 - Validación automatizada de propietario, origen, MIME y firma binaria, tamaño, hash, lectura y eliminación.
 
 ## Arquitectura objetivo
@@ -156,9 +158,9 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 4. Aplicar migraciones portables en Azure PostgreSQL.
 5. Configurar Microsoft Entra External ID.
 6. Sustituir Supabase por adaptadores Azure.
-7. Desplegar y ejecutar en Azure los workflows ya preparados de retención y recuperación documental.
-8. Configurar alertas por fallo o ausencia de la ejecución programada.
-9. Preparar el workflow de despliegue de App Service con aprobación manual.
+7. Aprobar y ejecutar el primer despliegue de App Service con el workflow ya preparado.
+8. Ejecutar en Azure los workflows ya preparados de retención y recuperación documental.
+9. Activar y probar las alertas por fallo o ausencia de la ejecución programada.
 
 ## Propiedad
 

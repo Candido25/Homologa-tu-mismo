@@ -10,3 +10,4 @@ param postgresSkuTier = 'Burstable'
 param postgresStorageGiB = 32
 param postgresAllowAzureServices = true
 param assignManagedIdentityRoles = true
+param enableDocumentRetentionAlerts = false

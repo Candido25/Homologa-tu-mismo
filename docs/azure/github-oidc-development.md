@@ -81,3 +81,9 @@ repo:<propietario>/<repositorio>:environment:development-operations
 ```
 
 Esta identidad no conserva el token de retención en GitHub: lo lee temporalmente desde el secreto específico de Key Vault mediante OIDC. La configuración, variables y permisos mínimos se detallan en [`document-operations.md`](document-operations.md).
+
+## Identidad para despliegue de aplicación
+
+El workflow de App Service usa otra identidad federada y el secreto `AZURE_DEPLOY_CLIENT_ID`. Bicep le asigna `Website Contributor` únicamente sobre la aplicación mediante `applicationDeploymentPrincipalId`.
+
+El Environment `development` debe exigir aprobación manual antes de permitir el job de despliegue. La guía completa está en [`app-service-deployment.md`](app-service-deployment.md).

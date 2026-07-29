@@ -68,6 +68,22 @@ El workflow usa concurrencia exclusiva para impedir dos lotes simultáneos. GitH
 
 Antes de considerar la operación activa se debe ejecutar el workflow manualmente, confirmar una entrada satisfactoria en Application Insights y configurar una alerta por fallo o ausencia de ejecución.
 
+## Alertas preparadas
+
+Bicep puede crear dos reglas de consulta:
+
+- severidad 1 cuando aparece `document_retention_job_failed` o `document_retention_delete_failed`;
+- severidad 2 cuando no aparece `document_retention_job_completed` durante 26 horas.
+
+Las reglas y su Action Group permanecen desactivadas por defecto a nivel de plantilla. Después de una primera ejecución correcta se habilitan mediante:
+
+```text
+enableDocumentRetentionAlerts=true
+operationsAlertEmail=<correo operativo>
+```
+
+`operationsAlertEmail` es un parámetro seguro y no debe guardarse en el archivo `.bicepparam`. Activar consultas programadas puede generar consumo en Azure Monitor, por lo que requiere revisar presupuesto y `what-if`.
+
 ## Recuperación de Blob Storage
 
 El workflow manual `azure-document-recovery.yml` ejecuta:

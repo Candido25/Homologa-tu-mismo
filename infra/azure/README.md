@@ -35,6 +35,8 @@ La vista previa de desarrollo contiene:
 - Secreto `database-url` en Key Vault cuando PostgreSQL se despliega.
 - Token de retención en Key Vault cuando se proporciona como parámetro seguro.
 - Permisos acotados para la identidad federada de operaciones documentales.
+- Permiso `Website Contributor` acotado al App Service para una identidad de despliegue independiente.
+- Alertas de retención opcionales y desactivadas por defecto.
 
 Microsoft Entra External ID todavía no forma parte de la plantilla porque requiere configuración de tenant y flujos fuera del alcance básico de Bicep.
 
@@ -76,6 +78,8 @@ La identidad federada de Azure debe confiar en el repositorio y en el environmen
 La guía paso a paso está en [`docs/azure/github-oidc-development.md`](../../docs/azure/github-oidc-development.md).
 
 La programación de retención y la prueba de recuperación están descritas en [`docs/azure/document-operations.md`](../../docs/azure/document-operations.md). Ninguna de ellas crea recursos por sí sola; requieren que la plataforma haya sido desplegada y configurada.
+
+El empaquetado standalone, despliegue OIDC, health check y rollback están descritos en [`docs/azure/app-service-deployment.md`](../../docs/azure/app-service-deployment.md). El workflow es exclusivamente manual y no se ejecuta con cada push.
 
 El workflow manual ejecuta `what-if` con `assignManagedIdentityRoles=false` para no requerir permisos de administrador de acceso sobre la suscripción. El despliegue real debe revisar y activar las asignaciones RBAC de App Service a Storage y Key Vault.
 

@@ -1,0 +1,171 @@
+name: Desplegar aplicación Azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Entorno de destino'
+        required: true
+        default: development
+        type: choice
+        options:
+          - development
+
+permissions:
+  contents: read
+
+concurrency:
+  group: azure-app-deployment-development
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Construir artefacto standalone
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v5
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.18.0
+          package-manager-cache: false
+
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund
+
+      - name: Verificar TypeScript
+        run: npm run typecheck
+
+      - name: Compilar aplicación
+        run: npm run build
+
+      - name: Preparar paquete standalone
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .next/standalone/server.js || {
+            echo "Next.js no generó .next/standalone/server.js."
+            exit 1
+          }
+
+          mkdir -p "$RUNNER_TEMP/homologa-package/.next"
+          cp -R .next/standalone/. "$RUNNER_TEMP/homologa-package/"
+          cp -R .next/static "$RUNNER_TEMP/homologa-package/.next/static"
+          if [ -d public ]; then
+            cp -R public "$RUNNER_TEMP/homologa-package/public"
+          fi
+
+          (
+            cd "$RUNNER_TEMP/homologa-package"
+            zip -q -r "$RUNNER_TEMP/homologa-app.zip" .
+          )
+          sha256sum "$RUNNER_TEMP/homologa-app.zip" > "$RUNNER_TEMP/homologa-app.zip.sha256"
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: homologa-azure-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/homologa-app.zip
+            ${{ runner.temp }}/homologa-app.zip.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    name: Desplegar y comprobar salud
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: development
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AZURE_WEB_APP_NAME: ${{ vars.AZURE_WEB_APP_NAME }}
+      APP_BASE_URL: ${{ vars.AZURE_APP_URL }}
+
+    steps:
+      - name: Validar destino
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AZURE_WEB_APP_NAME" || {
+            echo "Falta la variable AZURE_WEB_APP_NAME."
+            exit 1
+          }
+          case "$APP_BASE_URL" in
+            https://*) ;;
+            *) echo "AZURE_APP_URL debe existir y usar HTTPS."; exit 1 ;;
+          esac
+
+      - name: Descargar artefacto
+        uses: actions/download-artifact@v5
+        with:
+          name: homologa-azure-${{ github.sha }}
+          path: ${{ runner.temp }}/artifact
+
+      - name: Verificar integridad del artefacto
+        shell: bash
+        working-directory: ${{ runner.temp }}/artifact
+        run: sha256sum --check homologa-app.zip.sha256
+
+      - name: Iniciar sesión en Azure con OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_DEPLOY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Desplegar App Service
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEB_APP_NAME }}
+          package: ${{ runner.temp }}/artifact/homologa-app.zip
+          clean: true
+          restart: true
+
+      - name: Comprobar salud
+        shell: bash
+        run: |
+          set -euo pipefail
+          health_file="$RUNNER_TEMP/health.json"
+
+          for attempt in $(seq 1 24); do
+            if curl \
+              --fail \
+              --silent \
+              --show-error \
+              --connect-timeout 10 \
+              --max-time 20 \
+              --output "$health_file" \
+              "${APP_BASE_URL%/}/api/health" &&
+              jq -e '
+                .status == "ok" and
+                .service == "homologa-tu-mismo" and
+                (.timestamp | type == "string")
+              ' "$health_file" > /dev/null; then
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "La aplicación no superó el health check después del despliegue."
+          exit 1
+
+      - name: Publicar resumen
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo "## Despliegue Azure"
+            echo
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Aplicación: \`$AZURE_WEB_APP_NAME\`"
+            echo "- Salud: correcta"
+            echo "- URL: ${APP_BASE_URL%/}"
+          } >> "$GITHUB_STEP_SUMMARY"

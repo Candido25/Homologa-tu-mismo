@@ -54,6 +54,16 @@ param documentRetentionJobToken string = ''
 @description('Object ID de la identidad federada que ejecutará operaciones documentales desde GitHub Actions.')
 param documentOperationsPrincipalId string = ''
 
+@description('Object ID de la identidad federada que desplegará exclusivamente la aplicación web.')
+param applicationDeploymentPrincipalId string = ''
+
+@description('Crear alertas de fallo y ausencia de retención. Activar solo después de la primera ejecución correcta.')
+param enableDocumentRetentionAlerts bool = false
+
+@secure()
+@description('Correo receptor del grupo de acciones de retención. Obligatorio si se activan alertas.')
+param operationsAlertEmail string = ''
+
 var resourceGroupName = 'rg-${projectName}-${environment}'
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -84,6 +94,9 @@ module platform './modules/platform.bicep' = {
     assignManagedIdentityRoles: assignManagedIdentityRoles
     documentRetentionJobToken: documentRetentionJobToken
     documentOperationsPrincipalId: documentOperationsPrincipalId
+    applicationDeploymentPrincipalId: applicationDeploymentPrincipalId
+    enableDocumentRetentionAlerts: enableDocumentRetentionAlerts
+    operationsAlertEmail: operationsAlertEmail
   }
 }
 
