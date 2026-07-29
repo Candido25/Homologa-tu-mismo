@@ -20,7 +20,9 @@ La base de datos PostgreSQL y Microsoft Entra External ID se incorporarán en fa
 
 ## Región de desarrollo
 
-La suscripción Azure for Students bloqueó las regiones europeas probadas y permitió `eastus`. Por ello, el entorno de desarrollo usa temporalmente **East US** y solamente datos ficticios. Ningún cliente, pago ni documento real se alojará allí.
+La directiva `Allowed resource deployment regions` de Azure for Students permite `chilecentral`, `mexicocentral`, `centralus`, `southcentralus` y `eastus`. La simulación completa `what-if` rechazó `eastus` por disponibilidad regional y validó correctamente **Chile Central** con 12 recursos previstos.
+
+Por ello, el entorno de desarrollo usa temporalmente `chilecentral` y solamente datos ficticios. Ningún cliente, pago ni documento real se alojará en la suscripción estudiantil.
 
 Producción tendrá parámetros y suscripción independientes. Su región se elegirá según residencia de datos, cumplimiento, latencia, disponibilidad y costo.
 
@@ -37,19 +39,21 @@ Estos comandos compilan el código, pero no crean recursos.
 
 ```bash
 az deployment sub what-if \
-  --location eastus \
+  --location chilecentral \
   --template-file infra/azure/main.bicep \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
 
+La última simulación aprobada mostró `Resource changes: 12 to create`.
+
 ## Despliegue
 
-No ejecutar hasta haber creado un presupuesto y revisado la salida de `what-if`.
+No ejecutar hasta haber creado un presupuesto, revisado la salida de `what-if` y obtenido autorización expresa del propietario.
 
 ```bash
 az deployment sub create \
   --name homologa-dev-foundation \
-  --location eastus \
+  --location chilecentral \
   --template-file infra/azure/main.bicep \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
