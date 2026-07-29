@@ -32,14 +32,6 @@ jobs:
   validar-azurite:
     runs-on: ubuntu-latest
 
-    services:
-      azurite:
-        image: mcr.microsoft.com/azure-storage/azurite:3.36.0
-        ports:
-          - 10000:10000
-          - 10001:10001
-          - 10002:10002
-
     env:
       AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
 
@@ -55,6 +47,20 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      - name: Iniciar Azurite
+        run: |
+          docker run -d --name homologa-azurite \
+            -p 10000:10000 \
+            -p 10001:10001 \
+            -p 10002:10002 \
+            mcr.microsoft.com/azure-storage/azurite:3.36.0 \
+            azurite \
+            --blobHost 0.0.0.0 \
+            --queueHost 0.0.0.0 \
+            --tableHost 0.0.0.0 \
+            --skipApiVersionCheck \
+            --disableTelemetry
+
       - name: Esperar a Azurite
         shell: bash
         run: |
@@ -64,8 +70,17 @@ jobs:
             fi
             sleep 1
           done
+          docker logs homologa-azurite
           echo "Azurite no respondió dentro del plazo."
           exit 1
 
       - name: Probar almacenamiento privado
         run: npm run storage:verify
+
+      - name: Mostrar logs de Azurite si falla
+        if: failure()
+        run: docker logs homologa-azurite
+
+      - name: Detener Azurite
+        if: always()
+        run: docker rm -f homologa-azurite || true
