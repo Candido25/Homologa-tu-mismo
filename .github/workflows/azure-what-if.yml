@@ -56,16 +56,6 @@ jobs:
       - name: Compilar parámetros de desarrollo
         run: az bicep build-params --file infra/azure/parameters/dev.bicepparam --stdout > /tmp/homologa-dev-parameters.json
 
-      - name: Validar contraseña PostgreSQL
-        if: ${{ inputs.deployPostgres == 'true' }}
-        env:
-          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
-        run: |
-          if [ -z "$POSTGRES_ADMIN_PASSWORD" ]; then
-            echo "POSTGRES_ADMIN_PASSWORD debe existir como secreto del environment development."
-            exit 1
-          fi
-
       - name: Ejecutar what-if sin PostgreSQL
         if: ${{ inputs.deployPostgres == 'false' }}
         run: |
@@ -77,9 +67,11 @@ jobs:
 
       - name: Ejecutar what-if con PostgreSQL
         if: ${{ inputs.deployPostgres == 'true' }}
-        env:
-          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+        shell: bash
         run: |
+          set -euo pipefail
+          POSTGRES_ADMIN_PASSWORD="$(openssl rand -base64 48 | tr -d '\n')"
+          echo "::add-mask::$POSTGRES_ADMIN_PASSWORD"
           az deployment sub what-if \
             --location chilecentral \
             --template-file infra/azure/main.bicep \

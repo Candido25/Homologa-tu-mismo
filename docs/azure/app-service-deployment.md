@@ -2,7 +2,7 @@
 
 ## Estado
 
-El workflow de despliegue está preparado, pero no debe ejecutarse hasta que la infraestructura de desarrollo exista, el crédito esté confirmado y el Environment `development` tenga aprobación manual.
+El workflow de despliegue está preparado, pero no debe ejecutarse hasta que la infraestructura de desarrollo exista, el crédito esté confirmado y el Environment `development-deployment` tenga aprobación manual.
 
 El flujo usa OpenID Connect. No utiliza publish profiles, contraseñas de service principal ni credenciales permanentes de Azure.
 
@@ -13,10 +13,10 @@ La identidad federada de despliegue debe ser distinta de la identidad usada para
 Su credencial federada confía en:
 
 ```text
-repo:<propietario>/<repositorio>:environment:development
+repo:<propietario>/<repositorio>:environment:development-deployment
 ```
 
-El Environment `development` requiere:
+El Environment `development-deployment` ya existe, acepta únicamente `main` y exige revisión de `Candido25`. Todavía requiere:
 
 ### Secretos
 
@@ -89,7 +89,7 @@ Antes del primer despliegue:
 - revisar el último `what-if`;
 - confirmar que los recursos existen y pertenecen a Azure for Students;
 - revisar presupuesto, alertas y crédito disponible;
-- activar required reviewers en el Environment `development`;
+- activar required reviewers en el Environment `development-deployment`;
 - comprobar que PostgreSQL y Entra están configurados para las páginas privadas;
 - mantener únicamente usuarios y documentos ficticios.
 

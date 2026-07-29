@@ -11,7 +11,6 @@ Permitir que GitHub Actions ejecute `what-if` contra Azure sin guardar contrase�
   - `AZURE_CLIENT_ID`
   - `AZURE_TENANT_ID`
   - `AZURE_SUBSCRIPTION_ID`
-  - `POSTGRES_ADMIN_PASSWORD`
 - Una aplicación o identidad federada en Microsoft Entra ID.
 - Permisos mínimos para ejecutar `az deployment sub what-if`.
 
@@ -25,7 +24,8 @@ Permitir que GitHub Actions ejecute `what-if` contra Azure sin guardar contrase�
    - `AZURE_CLIENT_ID`: client id de la aplicación registrada en Entra.
    - `AZURE_TENANT_ID`: tenant id de Entra.
    - `AZURE_SUBSCRIPTION_ID`: id de la suscripción Azure for Students.
-   - `POSTGRES_ADMIN_PASSWORD`: contraseña segura para PostgreSQL cuando se simule o despliegue.
+
+El `what-if` con PostgreSQL genera una contraseña efímera dentro del runner, la oculta en los registros y la descarta al terminar. No requiere conservar `POSTGRES_ADMIN_PASSWORD` en GitHub.
 
 ## Configuración en Azure
 
@@ -86,4 +86,4 @@ Esta identidad no conserva el token de retención en GitHub: lo lee temporalment
 
 El workflow de App Service usa otra identidad federada y el secreto `AZURE_DEPLOY_CLIENT_ID`. Bicep le asigna `Website Contributor` únicamente sobre la aplicación mediante `applicationDeploymentPrincipalId`.
 
-El Environment `development` debe exigir aprobación manual antes de permitir el job de despliegue. La guía completa está en [`app-service-deployment.md`](app-service-deployment.md).
+El Environment `development-deployment` debe limitarse a `main` y exigir aprobación manual antes de permitir el job de despliegue. La guía completa está en [`app-service-deployment.md`](app-service-deployment.md).

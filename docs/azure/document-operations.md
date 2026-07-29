@@ -17,7 +17,7 @@ Esta automatización queda preparada en el repositorio, pero no se considera act
 
 ## Entorno de GitHub
 
-Crear un Environment independiente llamado `development-operations`. Debe aceptar únicamente la rama predeterminada y no debe compartir credenciales con producción.
+El Environment independiente `development-operations` ya existe y acepta únicamente `main`. No comparte credenciales con producción y todavía requiere la configuración OIDC indicada a continuación.
 
 Configurar estos secretos:
 

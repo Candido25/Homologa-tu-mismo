@@ -79,7 +79,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: development
+    environment: development-deployment
     permissions:
       contents: read
       id-token: write

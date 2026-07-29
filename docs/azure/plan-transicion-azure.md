@@ -32,7 +32,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 ### Fase 1 — Infraestructura de desarrollo
 
-- [ ] Ejecutar `what-if` antes de crear recursos.
+- [x] Ejecutar `what-if` antes de crear recursos.
 - [ ] Crear `rg-homologa-dev` en Chile Central dentro de Azure for Students.
 - [ ] Crear App Service Linux con Node.js.
 - [ ] Crear Storage Account con contenedores privados.
@@ -75,14 +75,15 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 ### Fase 5 — Despliegue continuo de desarrollo
 
 - [ ] Crear identidad de despliegue con OpenID Connect.
-- [ ] Configurar GitHub Environment `development`.
+- [x] Configurar GitHub Environment `development` para simulaciones.
 - [x] Documentar configuración OIDC de GitHub Actions para Azure Students.
 - [x] Crear workflow manual de infraestructura con `what-if`.
-- [ ] Añadir aprobación manual al GitHub Environment `development`.
+- [x] Configurar `development-deployment` con rama `main` y aprobación manual.
 - [x] Preparar workflow manual OIDC para Azure App Service con artefacto verificable y health check.
 - [ ] Ejecutar el primer despliegue aprobado de la aplicación.
 - [x] Preparar workflow diario de retención con OIDC, Key Vault y resumen operativo.
 - [x] Preparar prueba manual de recuperación de un blob ficticio.
+- [x] Configurar `development-operations` restringido a la rama `main`.
 - [ ] Ejecutar y supervisar retención y recuperación en el entorno Azure desplegado.
 - [x] Preparar alertas opt-in por fallo o ausencia de ejecución de retención.
 - [ ] Activar y probar las alertas después de la primera ejecución correcta.

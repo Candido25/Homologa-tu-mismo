@@ -71,7 +71,6 @@ También existe el workflow manual **Azure what-if** en GitHub Actions. Requiere
 - `AZURE_CLIENT_ID`
 - `AZURE_TENANT_ID`
 - `AZURE_SUBSCRIPTION_ID`
-- `POSTGRES_ADMIN_PASSWORD` si se simula PostgreSQL
 
 La identidad federada de Azure debe confiar en el repositorio y en el environment `development`.
 
@@ -93,11 +92,14 @@ az deployment sub what-if \
   --parameters deployPostgres=true postgresAdminPassword='REEMPLAZAR_EN_TERMINAL'
 ```
 
-La última simulación aprobada mostró:
+La simulación aprobada el 29 de julio de 2026, con App Service `F1`, PostgreSQL desactivado, RBAC desactivado y alertas desactivadas, mostró:
 
 ```text
-Resource changes: 12 to create
+Resource changes: 10 to create
+Potential changes: 1 to create
 ```
+
+El cambio potencial corresponde a `document-retention-job-token`: Azure no puede resolver por adelantado la condición de un parámetro seguro. El despliegue real solo debe proporcionar ese token cuando Key Vault y la automatización documental vayan a activarse.
 
 No se conserva en esta guía ningún comando de creación para reducir el riesgo de despliegue accidental.
 
