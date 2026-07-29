@@ -2,16 +2,16 @@
 
 ## Objetivo
 
-Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Azure antes de incorporar usuarios o documentos reales.
+Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Azure, aprovechando Azure for Students y GitHub Education como plataforma inicial de construcción, validación y demostración del emprendimiento.
 
 ## Reglas de transición
 
 - No introducir datos reales en Supabase durante la transición.
 - No eliminar Supabase hasta completar las pruebas funcionales y de seguridad en Azure.
-- No crear recursos mientras no se verifique el crédito y la vigencia de Azure for Students.
-- Azure for Students se usará únicamente para desarrollo, pruebas y demostración.
-- No incorporar clientes, pagos ni documentos reales en la suscripción estudiantil.
-- Producción comercial se desplegará en una suscripción de pago independiente.
+- Verificar crédito, vigencia y alertas antes de crear recursos que consuman saldo.
+- Azure for Students será el entorno inicial del proyecto mientras el uso sea educativo, de desarrollo, validación o demostración.
+- No incorporar pagos ni documentos reales sensibles hasta aprobar seguridad, continuidad, respaldo y costos.
+- La suscripción de pago se activará cuando el producto tenga tracción real, requiera continuidad comercial o supere los límites del crédito estudiantil.
 - No crear recursos de producción sin presupuesto y alertas de costo.
 - No guardar contraseñas ni secretos en el repositorio.
 - Cada fase debe aprobar compilación, pruebas y revisión antes de continuar.
@@ -28,26 +28,26 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [ ] Confirmar el saldo y la fecha de renovación de Azure for Students.
 - [ ] Resolver la discrepancia: suscripción activa en Azure Portal, sin sponsorship activo en Azure Sponsorships.
 - [ ] Confirmar nombres globales disponibles.
-- [ ] Documentar la suscripción comercial que alojará producción.
+- [ ] Documentar el criterio económico y operativo para pasar de Azure for Students a pago por uso.
 
 ### Fase 1 — Infraestructura de desarrollo
 
 - [ ] Ejecutar `what-if` antes de crear recursos.
-- [ ] Crear `rg-homologa-dev` en West Europe dentro de Azure for Students.
+- [ ] Crear `rg-homologa-dev` en Chile Central dentro de Azure for Students.
 - [ ] Crear App Service Linux con Node.js.
 - [ ] Crear Storage Account con contenedores privados.
 - [ ] Crear Key Vault con RBAC.
 - [ ] Crear Application Insights y Log Analytics.
 - [ ] Habilitar identidad administrada en App Service.
 - [ ] Asignar permisos mínimos sobre Storage y Key Vault.
-- [ ] Confirmar que el entorno contiene únicamente datos ficticios.
+- [ ] Confirmar que el entorno contiene únicamente datos ficticios hasta aprobar datos reales.
 
 ### Fase 2 — Base de datos PostgreSQL
 
-- [ ] Elegir SKU de desarrollo después de estimar costo mensual.
-- [ ] Crear Azure Database for PostgreSQL Flexible Server de desarrollo.
-- [ ] Adaptar el esquema para eliminar dependencias de `auth.users`, `auth.uid()` y `storage.*`.
-- [ ] Crear migraciones portables.
+- [x] Elegir SKU inicial mínimo de desarrollo: `B_Standard_B1ms`, 32 GiB, Burstable.
+- [ ] Crear Azure Database for PostgreSQL Flexible Server de desarrollo mediante Bicep opcional.
+- [x] Adaptar el esquema para eliminar dependencias de `auth.users`, `auth.uid()` y `storage.*`.
+- [x] Crear migraciones portables.
 - [ ] Ejecutar pruebas de aislamiento con dos usuarios ficticios.
 - [ ] Configurar copias automáticas y retención.
 

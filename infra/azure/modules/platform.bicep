@@ -10,6 +10,28 @@ param projectName string
 @description('SKU del App Service Plan.')
 param appServiceSku string
 
+@description('Crear Azure Database for PostgreSQL Flexible Server.')
+param deployPostgres bool
+
+@description('Usuario administrador de PostgreSQL.')
+param postgresAdminLogin string
+
+@secure()
+@description('Contraseña administrador de PostgreSQL.')
+param postgresAdminPassword string
+
+@description('SKU de PostgreSQL Flexible Server.')
+param postgresSkuName string
+
+@description('Tier de PostgreSQL Flexible Server.')
+param postgresSkuTier string
+
+@description('Almacenamiento PostgreSQL en GiB.')
+param postgresStorageGiB int
+
+@description('Permitir conexiones desde otros servicios de Azure al PostgreSQL de desarrollo.')
+param postgresAllowAzureServices bool = true
+
 var suffix = take(uniqueString(subscription().subscriptionId, resourceGroup().id, environment), 6)
 var normalizedProject = toLower(replace(projectName, '-', ''))
 var storageAccountName = take('st${normalizedProject}${environment}${suffix}', 24)
@@ -18,6 +40,9 @@ var webAppName = take('app-${projectName}-${environment}-${suffix}', 60)
 var appServicePlanName = 'asp-${projectName}-${environment}'
 var logAnalyticsName = 'log-${projectName}-${environment}'
 var applicationInsightsName = 'appi-${projectName}-${environment}'
+var postgresServerName = take('psql-${projectName}-${environment}-${suffix}', 63)
+var databaseName = 'homologa'
+var databaseUrlSecretName = 'database-url'
 var isFreePlan = appServiceSku == 'F1'
 var commonTags = {
   application: 'Homologa Tu Mismo'
@@ -121,6 +146,64 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = if (deployPostgres) {
+  name: postgresServerName
+  location: location
+  tags: commonTags
+  sku: {
+    name: postgresSkuName
+    tier: postgresSkuTier
+  }
+  properties: {
+    version: '16'
+    administratorLogin: postgresAdminLogin
+    administratorLoginPassword: postgresAdminPassword
+    authConfig: {
+      activeDirectoryAuth: 'Disabled'
+      passwordAuth: 'Enabled'
+    }
+    backup: {
+      backupRetentionDays: environment == 'prod' ? 14 : 7
+      geoRedundantBackup: 'Disabled'
+    }
+    highAvailability: {
+      mode: 'Disabled'
+    }
+    network: {
+      publicNetworkAccess: 'Enabled'
+    }
+    storage: {
+      storageSizeGB: postgresStorageGiB
+    }
+  }
+}
+
+resource postgresDatabase 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = if (deployPostgres) {
+  parent: postgresServer
+  name: databaseName
+  properties: {
+    charset: 'UTF8'
+    collation: 'en_US.utf8'
+  }
+}
+
+resource postgresAzureServicesFirewall 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-12-01-preview' = if (deployPostgres && postgresAllowAzureServices) {
+  parent: postgresServer
+  name: 'AllowAzureServices'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
+  }
+}
+
+resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (deployPostgres) {
+  parent: keyVault
+  name: databaseUrlSecretName
+  properties: {
+    value: 'postgresql://${postgresAdminLogin}:${postgresAdminPassword}@${postgresServer!.properties.fullyQualifiedDomainName}:5432/${databaseName}?sslmode=require'
+  }
+}
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
   location: location
@@ -185,6 +268,14 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: applicationInsights.properties.ConnectionString
         }
+        {
+          name: 'DATABASE_PROVIDER'
+          value: deployPostgres ? 'postgres' : ''
+        }
+        {
+          name: 'DATABASE_URL'
+          value: deployPostgres ? '@Microsoft.KeyVault(SecretUri=${databaseUrlSecret!.properties.secretUri})' : ''
+        }
       ]
     }
   }
@@ -218,3 +309,5 @@ output webAppDefaultHostname string = webApp.properties.defaultHostName
 output storageAccountName string = storageAccount.name
 output keyVaultName string = keyVault.name
 output applicationInsightsName string = applicationInsights.name
+output postgresServerName string = deployPostgres ? postgresServer!.name : ''
+output postgresFullyQualifiedDomainName string = deployPostgres ? postgresServer!.properties.fullyQualifiedDomainName : ''

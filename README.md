@@ -8,7 +8,7 @@ Aplicación web orientada a ayudar a profesionales latinoamericanos a identifica
 
 ## Estado
 
-**Preparación arquitectónica sin consumo de Azure.**
+**Preparación Azure-first con control estricto de crédito.**
 
 La versión actual incluye:
 
@@ -17,14 +17,14 @@ La versión actual incluye:
 - Modelo de datos para usuarios, expedientes, requisitos, documentos, revisiones y auditoría.
 - Infraestructura Azure descrita mediante Bicep y validada con `what-if` en Chile Central.
 - Presupuesto y alertas de consumo configurados en Azure for Students.
-- Congelamiento de despliegue: no se crearán recursos hasta concluir pruebas locales y estimación de costos.
+- Azure for Students será la plataforma inicial de construcción, validación y demostración del emprendimiento, aprovechando el crédito disponible.
 - Esquema PostgreSQL portable sin referencias a `auth.users` ni `auth.uid()`.
 - Entorno local reproducible con PostgreSQL y Azurite.
 - Contratos independientes del proveedor para identidad, expedientes y documentos.
 
 ## Arquitectura objetivo
 
-Homologa Tú Mismo seguirá siendo un **monolito modular**. La producción comercial usará una suscripción Azure independiente de la suscripción estudiantil.
+Homologa Tú Mismo seguirá siendo un **monolito modular**. La primera etapa aprovechará Azure for Students y GitHub Education; cuando existan clientes reales, pagos o documentos sensibles reales, se migrará o escalará a una suscripción Azure de pago con presupuestos propios.
 
 ```text
 Next.js 16 + React 19 + TypeScript
@@ -49,16 +49,16 @@ Las decisiones están documentadas en:
 
 ## Regla de control de gasto
 
-No se ejecutará ningún despliegue real mientras falten:
+Se permite preparar y validar infraestructura en Azure for Students siempre que se respeten estas reglas:
 
-1. Pruebas locales de aislamiento entre dos usuarios.
-2. Adaptadores portables de identidad, PostgreSQL y documentos.
-3. Estimación mensual por servicio.
-4. Revisión de RBAC, redes, respaldos y restauración.
-5. Workflow con aprobación manual.
-6. Autorización expresa del propietario.
+1. Usar primero los niveles gratuitos y SKU mínimos.
+2. Mantener presupuestos y alertas de consumo.
+3. No guardar secretos en GitHub ni en código.
+4. Probar con datos ficticios mientras no existan controles completos.
+5. Ejecutar `what-if` antes de crear o cambiar recursos costosos.
+6. Pasar a suscripción pagada cuando el producto maneje clientes, pagos o documentos reales sensibles.
 
-Los comandos permitidos durante esta fase son compilación, validación y `what-if`. No se autoriza `az deployment ... create`.
+Los despliegues reales deben ser intencionales y revisados. El crédito estudiantil se tratará como capital inicial limitado del proyecto.
 
 ## Desarrollo local sin Azure
 
@@ -138,17 +138,18 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 4. Los procesos pesados se ejecutan fuera de la petición web.
 5. Cada recomendación relevante conserva fuente, versión y nivel de confianza.
 6. Seguridad y privacidad se validan antes de recibir documentos reales.
-7. La suscripción Azure for Students solo utiliza datos ficticios.
+7. Azure for Students se aprovecha como entorno inicial del emprendimiento, con datos ficticios hasta aprobar seguridad, costos y continuidad.
 
-## Próximas fases sin consumo
+## Próximas fases
 
-1. Implementar adaptador PostgreSQL local.
-2. Implementar identidad local ficticia mediante `CurrentUserProvider`.
-3. Sustituir consultas Supabase de expedientes por `CaseRepository`.
-4. Implementar Blob Storage local sobre Azurite.
-5. Probar aislamiento, MIME, tamaño, hash, retención y eliminación.
-6. Añadir PostgreSQL al Bicep después de aprobar SKU y costo.
-7. Preparar GitHub OIDC y workflow con aprobación manual.
+1. Validar Bicep con PostgreSQL opcional.
+2. Ejecutar `what-if` en Azure for Students antes de crear recursos.
+3. Desplegar App Service, Storage, Key Vault, observabilidad y PostgreSQL mínimo cuando el crédito esté confirmado.
+4. Aplicar migraciones portables en Azure PostgreSQL.
+5. Configurar Microsoft Entra External ID.
+6. Sustituir Supabase por adaptadores Azure.
+7. Probar aislamiento, MIME, tamaño, hash, retención y eliminación.
+8. Preparar GitHub OIDC y workflow con aprobación manual.
 
 ## Propiedad
 

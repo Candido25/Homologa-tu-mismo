@@ -2,22 +2,20 @@
 
 Esta carpeta define la plataforma de Homologa Tú Mismo mediante Bicep.
 
-## Estado: congelamiento de despliegue
+## Estado: Azure Students primero, gasto controlado
 
-La infraestructura puede compilarse, validarse y revisarse con `what-if`, pero **no debe desplegarse todavía**.
+La infraestructura puede compilarse, validarse y revisarse con `what-if`. Azure for Students se usará como plataforma inicial del emprendimiento, cuidando el crédito como presupuesto limitado.
 
-Queda prohibido ejecutar comandos `az deployment ... create` hasta completar:
+Antes de ejecutar comandos `az deployment ... create` se debe confirmar:
 
-- entorno local reproducible;
-- adaptadores portables;
-- pruebas de aislamiento;
-- PostgreSQL y respaldo en el diseño;
-- estimación mensual por servicio;
-- revisión de RBAC y redes;
-- workflow con aprobación manual;
-- autorización expresa del propietario.
+- crédito y vigencia de Azure for Students;
+- presupuesto y alertas activas;
+- salida de `what-if` revisada;
+- SKU elegido conscientemente;
+- ausencia de secretos en Git;
+- uso de datos ficticios hasta aprobar seguridad y continuidad.
 
-El `what-if` aprobado no constituye autorización de gasto.
+El `what-if` aprobado no crea recursos; solo muestra el impacto esperado.
 
 ## Alcance actual de la plantilla
 
@@ -32,8 +30,10 @@ La vista previa de desarrollo contiene:
 - Application Insights y Log Analytics.
 - Identidad administrada para App Service.
 - Permisos mínimos de la aplicación sobre Blob Storage y Key Vault.
+- Azure Database for PostgreSQL Flexible Server opcional, desactivado por defecto en `dev.bicepparam`.
+- Secreto `database-url` en Key Vault cuando PostgreSQL se despliega.
 
-PostgreSQL y Microsoft Entra External ID todavía no forman parte de la plantilla. Se añadirán después de aprobar arquitectura, SKU y costo.
+Microsoft Entra External ID todavía no forma parte de la plantilla porque requiere configuración de tenant y flujos fuera del alcance básico de Bicep.
 
 ## Región de desarrollo
 
@@ -59,6 +59,16 @@ az deployment sub what-if \
   --location chilecentral \
   --template-file infra/azure/main.bicep \
   --parameters infra/azure/parameters/dev.bicepparam
+```
+
+Para incluir PostgreSQL en la simulación o despliegue de desarrollo, pasar parámetros explícitos y una contraseña segura fuera del repositorio:
+
+```bash
+az deployment sub what-if \
+  --location chilecentral \
+  --template-file infra/azure/main.bicep \
+  --parameters infra/azure/parameters/dev.bicepparam \
+  --parameters deployPostgres=true postgresAdminPassword='REEMPLAZAR_EN_TERMINAL'
 ```
 
 La última simulación aprobada mostró:
