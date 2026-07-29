@@ -93,6 +93,8 @@ Table: http://127.0.0.1:10002
 
 La aplicación usa `UseDevelopmentStorage=true`. Esa cadena solo es válida para el emulador local y no debe aparecer en producción.
 
+Azurite se inicia con `--skipApiVersionCheck` porque el SDK puede emitir una versión de API posterior a la versión base del emulador. Esta opción se limita al desarrollo local y al CI; nunca se aplica a Azure Blob Storage real.
+
 Los contenedores previstos son:
 
 - `case-documents`
@@ -104,7 +106,8 @@ El adaptador `AzuriteDocumentStorage`:
 - genera rutas con usuario, expediente y documento;
 - admite únicamente PDF, JPEG y PNG;
 - rechaza archivos vacíos o superiores a 25 MB;
-- calcula SHA-256 antes de guardar;
+- calcula SHA-256 antes de guardar y lo comprueba al leer;
+- rechaza rutas fuera del patrón autorizado;
 - permite leer y eliminar objetos mediante el contrato portable.
 
 La interfaz de carga para usuarios sigue desactivada. El adaptador se valida únicamente con contenido ficticio hasta terminar las pruebas de autorización y metadatos.
