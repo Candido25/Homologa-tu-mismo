@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { isSupabaseConfigured } from "@/lib/env";
+import { getAuthProviderName, isAuthProviderConfigured } from "@/lib/env";
 import { signIn } from "@/app/auth/actions";
 
 export const metadata: Metadata = {
@@ -17,7 +17,9 @@ type PageProps = {
 
 export default async function SignInPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const configured = isSupabaseConfigured();
+  const provider = getAuthProviderName();
+  const configured = isAuthProviderConfigured();
+  const isEntra = provider === "entra";
 
   return (
     <>
@@ -43,11 +45,15 @@ export default async function SignInPage({ searchParams }: PageProps) {
               <span className="result-label">Panel privado</span>
               <h2>Iniciar sesión</h2>
             </div>
-            <p className="helper">Utiliza el correo con el que registraste tu expediente.</p>
+            <p className="helper">
+              {isEntra
+                ? "Accede mediante el portal seguro de identidad."
+                : "Utiliza el correo con el que registraste tu expediente."}
+            </p>
 
             {!configured && (
               <div className="notice notice-warning" role="status">
-                El módulo está preparado, pero todavía falta conectar el proyecto de Supabase.
+                La identidad de clientes todavía no está configurada para este entorno.
               </div>
             )}
 
@@ -65,25 +71,29 @@ export default async function SignInPage({ searchParams }: PageProps) {
 
             <input type="hidden" name="siguiente" value={params.siguiente || "/panel"} />
 
-            <div className="field">
-              <label htmlFor="email">Correo electrónico</label>
-              <input id="email" name="email" type="email" autoComplete="email" required />
-            </div>
+            {!isEntra && (
+              <>
+                <div className="field">
+                  <label htmlFor="email">Correo electrónico</label>
+                  <input id="email" name="email" type="email" autoComplete="email" required />
+                </div>
 
-            <div className="field">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                minLength={8}
-                autoComplete="current-password"
-                required
-              />
-            </div>
+                <div className="field">
+                  <label htmlFor="password">Contraseña</label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minLength={8}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+              </>
+            )}
 
             <button className="button auth-submit" type="submit" disabled={!configured}>
-              Entrar a mi panel
+              {isEntra ? "Continuar de forma segura" : "Entrar a mi panel"}
             </button>
 
             <p className="auth-switch">
@@ -100,7 +110,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
             </p>
             <ul className="check-list">
               <li>Sesiones seguras mediante cookies.</li>
-              <li>Acceso aislado por usuario con RLS.</li>
+              <li>Autorización por propietario desde el servidor.</li>
               <li>Sin claves administrativas en el navegador.</li>
             </ul>
             <div className="auth-security-strip">

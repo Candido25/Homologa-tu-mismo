@@ -61,6 +61,8 @@ npm run local:reset    # borra volúmenes y reconstruye todo
 
 `local:reset` elimina exclusivamente los volúmenes Docker del entorno local. No interactúa con Azure.
 
+`db:migrate` aplica todas las migraciones numeradas de `database/migrations` de forma idempotente. También existe `db:migrate:portable`, que usa directamente `DATABASE_URL` y es el comando empleado por GitHub Actions para Azure.
+
 ## Credenciales locales
 
 Las credenciales definidas en `compose.yaml` son deliberadamente simples y solo sirven en la computadora de desarrollo:

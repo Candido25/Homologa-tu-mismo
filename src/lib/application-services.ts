@@ -3,6 +3,7 @@ import "server-only";
 import { PostgresCaseRepository } from "@/adapters/cases/postgres-case-repository";
 import { SupabaseCaseRepository } from "@/adapters/cases/supabase-case-repository";
 import { PostgresDocumentRepository } from "@/adapters/documents/postgres-document-repository";
+import { EntraCurrentUserProvider } from "@/adapters/identity/entra-current-user";
 import { LocalTestCurrentUserProvider } from "@/adapters/identity/local-test-current-user";
 import { SupabaseCurrentUserProvider } from "@/adapters/identity/supabase-current-user";
 import { AzureBlobDocumentStorage } from "@/adapters/storage/azure-blob-document-storage";
@@ -18,6 +19,7 @@ import {
   getDatabaseProviderName,
   getDocumentRetentionDays,
   getStorageProviderName,
+  isAuthProviderConfigured,
   isApplicationDataConfigured,
   isAzureBlobConfigured,
   isAzuriteConfigured,
@@ -41,7 +43,10 @@ export function getCurrentUserProvider(): CurrentUserProvider {
     return new SupabaseCurrentUserProvider();
   }
 
-  throw new Error("Microsoft Entra External ID todavía no está implementado.");
+  if (!isAuthProviderConfigured()) {
+    throw new Error("Microsoft Entra External ID no está configurado.");
+  }
+  return new EntraCurrentUserProvider();
 }
 
 export function getCaseRepository(): CaseRepository {
@@ -86,9 +91,7 @@ export function getDocumentRetentionService() {
 }
 
 export function isPrivateAreaConfigured() {
-  const authProvider = getAuthProviderName();
-  const authConfigured = authProvider === "local-test" ? isLocalTestAuthEnabled() : isSupabaseConfigured();
-  return authConfigured && isApplicationDataConfigured();
+  return isAuthProviderConfigured() && isApplicationDataConfigured();
 }
 
 export function isDocumentFlowConfigured() {

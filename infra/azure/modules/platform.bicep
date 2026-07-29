@@ -45,6 +45,22 @@ param documentOperationsPrincipalId string = ''
 @description('Object ID de la identidad federada autorizada para desplegar la aplicación web.')
 param applicationDeploymentPrincipalId string = ''
 
+@description('Object ID de la identidad federada autorizada para migrar PostgreSQL.')
+param databaseMigrationPrincipalId string = ''
+
+@description('Directory tenant ID de Microsoft Entra External ID.')
+param entraTenantId string = ''
+
+@description('Subdominio del tenant externo de Microsoft Entra.')
+param entraTenantSubdomain string = ''
+
+@description('Application client ID de la aplicación web registrada en el tenant externo.')
+param entraClientId string = ''
+
+@secure()
+@description('Credencial de desarrollo de la aplicación Entra.')
+param entraClientSecret string = ''
+
 @description('Crear alertas de fallo y ausencia de retención.')
 param enableDocumentRetentionAlerts bool = false
 
@@ -64,7 +80,9 @@ var postgresServerName = take('psql-${projectName}-${environment}-${suffix}', 63
 var databaseName = 'homologa'
 var databaseUrlSecretName = 'database-url'
 var documentRetentionJobTokenSecretName = 'document-retention-job-token'
+var entraClientSecretName = 'entra-client-secret'
 var isFreePlan = appServiceSku == 'F1'
+var entraConfigured = deployPostgres && !empty(entraTenantId) && !empty(entraTenantSubdomain) && !empty(entraClientId) && !empty(entraClientSecret)
 var commonTags = {
   application: 'Homologa Tu Mismo'
   environment: environment
@@ -225,6 +243,14 @@ resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (
   }
 }
 
+resource entraClientSecretResource 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (!empty(entraClientSecret)) {
+  parent: keyVault
+  name: entraClientSecretName
+  properties: {
+    value: entraClientSecret
+  }
+}
+
 resource documentRetentionJobTokenSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (!empty(documentRetentionJobToken)) {
   parent: keyVault
   name: documentRetentionJobTokenSecretName
@@ -305,6 +331,10 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
             : '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=${documentRetentionJobTokenSecretName})'
         }
         {
+          name: 'AUTH_PROVIDER'
+          value: entraConfigured ? 'entra' : ''
+        }
+        {
           name: 'AI_PROVIDER'
           value: 'disabled'
         }
@@ -332,6 +362,28 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'DATABASE_URL'
           value: deployPostgres ? '@Microsoft.KeyVault(SecretUri=${databaseUrlSecret!.properties.secretUri})' : ''
         }
+        {
+          name: 'ENTRA_TENANT_ID'
+          value: entraConfigured ? entraTenantId : ''
+        }
+        {
+          name: 'ENTRA_TENANT_SUBDOMAIN'
+          value: entraConfigured ? entraTenantSubdomain : ''
+        }
+        {
+          name: 'ENTRA_CLIENT_ID'
+          value: entraConfigured ? entraClientId : ''
+        }
+        {
+          name: 'ENTRA_CLIENT_SECRET'
+          value: entraConfigured
+            ? '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=${entraClientSecretName})'
+            : ''
+        }
+        {
+          name: 'ENTRA_SESSION_HOURS'
+          value: '12'
+        }
       ]
     }
   }
@@ -340,6 +392,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
 var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 var websiteContributorRoleId = 'de139f84-1756-47ae-9be6-808fbbe84772'
+var contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 
 resource storageBlobRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles) {
   name: guid(storageAccount.id, webApp.id, storageBlobDataContributorRoleId)
@@ -387,6 +440,26 @@ resource applicationDeploymentRole 'Microsoft.Authorization/roleAssignments@2022
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', websiteContributorRoleId)
     principalId: applicationDeploymentPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource databaseMigrationServerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles && deployPostgres && !empty(databaseMigrationPrincipalId)) {
+  name: guid(postgresServer!.id, databaseMigrationPrincipalId, contributorRoleId)
+  scope: postgresServer
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', contributorRoleId)
+    principalId: databaseMigrationPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource databaseMigrationSecretRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles && deployPostgres && !empty(databaseMigrationPrincipalId)) {
+  name: guid(databaseUrlSecret!.id, databaseMigrationPrincipalId, keyVaultSecretsUserRoleId)
+  scope: databaseUrlSecret
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    principalId: databaseMigrationPrincipalId
     principalType: 'ServicePrincipal'
   }
 }

@@ -36,9 +36,11 @@ La vista previa de desarrollo contiene:
 - Token de retención en Key Vault cuando se proporciona como parámetro seguro.
 - Permisos acotados para la identidad federada de operaciones documentales.
 - Permiso `Website Contributor` acotado al App Service para una identidad de despliegue independiente.
+- Permisos acotados para una identidad OIDC de migración de PostgreSQL.
+- Configuración condicional de Microsoft Entra External ID y secreto en Key Vault.
 - Alertas de retención opcionales y desactivadas por defecto.
 
-Microsoft Entra External ID todavía no forma parte de la plantilla porque requiere configuración de tenant y flujos fuera del alcance básico de Bicep.
+El tenant, el registro de aplicación y el flujo de usuario de Microsoft Entra External ID se configuran fuera de Bicep. La plantilla solo activa el proveedor después de recibir sus identificadores, la credencial de desarrollo y una base PostgreSQL.
 
 ## Región de desarrollo
 
@@ -80,6 +82,8 @@ La programación de retención y la prueba de recuperación están descritas en 
 
 El empaquetado standalone, despliegue OIDC, health check y rollback están descritos en [`docs/azure/app-service-deployment.md`](../../docs/azure/app-service-deployment.md). El workflow es exclusivamente manual y no se ejecuta con cada push.
 
+La configuración del tenant externo está descrita en [`docs/azure/entra-external-id.md`](../../docs/azure/entra-external-id.md). El costo, la identidad OIDC y el procedimiento de migración de PostgreSQL están en [`docs/azure/postgres-deployment.md`](../../docs/azure/postgres-deployment.md).
+
 El workflow manual ejecuta `what-if` con `assignManagedIdentityRoles=false` para no requerir permisos de administrador de acceso sobre la suscripción. El despliegue real debe revisar y activar las asignaciones RBAC de App Service a Storage y Key Vault.
 
 Para incluir PostgreSQL en la simulación o despliegue de desarrollo, pasar parámetros explícitos y una contraseña segura fuera del repositorio:
@@ -109,6 +113,8 @@ Potential changes: 1 to create
 ```
 
 El workflow genera una contraseña efímera para esta simulación y no necesita conservarla en GitHub. La evidencia y el alcance recomendado están en [`docs/azure/pre-deployment-readiness.md`](../../docs/azure/pre-deployment-readiness.md).
+
+Las migraciones reales se ejecutan únicamente mediante el workflow manual **Migrar PostgreSQL Azure** y el environment protegido `development-database`. El runner abre una regla de firewall limitada a su IPv4, obtiene `database-url` desde Key Vault y elimina la regla al finalizar.
 
 Una simulación local adicional, ejecutada con rol `Owner` y las asignaciones RBAC activadas, mostró:
 

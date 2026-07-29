@@ -46,20 +46,25 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 - [x] Elegir SKU inicial mínimo de desarrollo: `B_Standard_B1ms`, 32 GiB, Burstable.
 - [x] Validar mediante `what-if` el escenario opcional con PostgreSQL mínimo.
+- [x] Preparar workflow OIDC con firewall temporal para aplicar migraciones.
+- [x] Validar localmente `0001_portable_core` y `0002_auth_sessions`.
 - [ ] Crear Azure Database for PostgreSQL Flexible Server de desarrollo mediante Bicep opcional.
 - [x] Adaptar el esquema para eliminar dependencias de `auth.users`, `auth.uid()` y `storage.*`.
 - [x] Crear migraciones portables.
-- [ ] Ejecutar pruebas de aislamiento con dos usuarios ficticios.
+- [x] Ejecutar pruebas locales de aislamiento con dos usuarios ficticios.
+- [ ] Repetir las pruebas de aislamiento con dos identidades Entra ficticias en Azure.
 - [ ] Configurar copias automáticas y retención.
 
 ### Fase 3 — Identidad de clientes
 
+- [x] Implementar MSAL/OpenID Connect con PKCE, `state`, `nonce` y sesión opaca propia.
+- [x] Preparar el mapeo estable `issuer` + `subject` hacia `external_identities`.
+- [x] Preparar cierre de sesión local y de Entra.
 - [ ] Crear tenant de Microsoft Entra External ID.
 - [ ] Registrar la aplicación web.
 - [ ] Configurar flujo de registro e inicio de sesión.
 - [ ] Configurar confirmación de correo y recuperación de contraseña.
-- [ ] Sustituir `@supabase/ssr` y Supabase Auth por MSAL/OpenID Connect.
-- [ ] Mapear el identificador estable del usuario a `profiles.external_subject`.
+- [ ] Activar Entra en Azure y retirar Supabase Auth después de la validación.
 
 ### Fase 4 — Documentos
 

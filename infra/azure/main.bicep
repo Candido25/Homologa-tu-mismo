@@ -57,6 +57,22 @@ param documentOperationsPrincipalId string = ''
 @description('Object ID de la identidad federada que desplegará exclusivamente la aplicación web.')
 param applicationDeploymentPrincipalId string = ''
 
+@description('Object ID de la identidad federada que aplicará migraciones a PostgreSQL.')
+param databaseMigrationPrincipalId string = ''
+
+@description('Directory tenant ID de Microsoft Entra External ID.')
+param entraTenantId string = ''
+
+@description('Subdominio del tenant externo de Microsoft Entra.')
+param entraTenantSubdomain string = ''
+
+@description('Application client ID de la aplicación web registrada en el tenant externo.')
+param entraClientId string = ''
+
+@secure()
+@description('Credencial de desarrollo de la aplicación Entra. En producción debe sustituirse por certificado o federación.')
+param entraClientSecret string = ''
+
 @description('Crear alertas de fallo y ausencia de retención. Activar solo después de la primera ejecución correcta.')
 param enableDocumentRetentionAlerts bool = false
 
@@ -95,6 +111,11 @@ module platform './modules/platform.bicep' = {
     documentRetentionJobToken: documentRetentionJobToken
     documentOperationsPrincipalId: documentOperationsPrincipalId
     applicationDeploymentPrincipalId: applicationDeploymentPrincipalId
+    databaseMigrationPrincipalId: databaseMigrationPrincipalId
+    entraTenantId: entraTenantId
+    entraTenantSubdomain: entraTenantSubdomain
+    entraClientId: entraClientId
+    entraClientSecret: entraClientSecret
     enableDocumentRetentionAlerts: enableDocumentRetentionAlerts
     operationsAlertEmail: operationsAlertEmail
   }

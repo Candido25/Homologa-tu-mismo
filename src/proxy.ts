@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  getAuthSessionCookieName,
   getAuthProviderName,
   getPublicSupabaseConfig,
+  isEntraConfigured,
   isLocalTestAuthEnabled,
   isSupabaseConfigured,
 } from "@/lib/env";
@@ -19,6 +21,21 @@ export async function proxy(request: NextRequest) {
 
   if (provider === "local-test") {
     if (isAuthPage && isLocalTestAuthEnabled()) {
+      return NextResponse.redirect(new URL("/panel", request.url));
+    }
+    return response;
+  }
+
+  if (provider === "entra") {
+    if (!isEntraConfigured()) return response;
+    const isAuthenticated = Boolean(request.cookies.get(getAuthSessionCookieName())?.value);
+
+    if (isProtected && !isAuthenticated) {
+      const loginUrl = new URL("/iniciar-sesion", request.url);
+      loginUrl.searchParams.set("siguiente", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (isAuthPage && isAuthenticated) {
       return NextResponse.redirect(new URL("/panel", request.url));
     }
     return response;

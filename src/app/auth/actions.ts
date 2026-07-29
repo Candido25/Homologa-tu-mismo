@@ -5,9 +5,11 @@ import { redirect } from "next/navigation";
 import {
   getApplicationUrl,
   getAuthProviderName,
+  isEntraConfigured,
   isLocalTestAuthEnabled,
   isSupabaseConfigured,
 } from "@/lib/env";
+import { revokeCurrentEntraSession } from "@/lib/entra/session";
 import { createClient } from "@/lib/supabase/server";
 
 function text(formData: FormData, field: string) {
@@ -35,7 +37,10 @@ export async function signIn(formData: FormData) {
   }
 
   if (provider === "entra") {
-    authRedirect("/iniciar-sesion", "error", "Microsoft Entra External ID todavía no está configurado.");
+    if (!isEntraConfigured()) {
+      authRedirect("/iniciar-sesion", "error", "Microsoft Entra External ID todavía no está configurado.");
+    }
+    redirect(`/auth/entra/start?siguiente=${encodeURIComponent(nextPath)}`);
   }
 
   if (!isSupabaseConfigured()) {
@@ -70,7 +75,13 @@ export async function signUp(formData: FormData) {
   }
 
   if (provider === "entra") {
-    authRedirect("/crear-cuenta", "error", "Microsoft Entra External ID todavía no está configurado.");
+    if (!isEntraConfigured()) {
+      authRedirect("/crear-cuenta", "error", "Microsoft Entra External ID todavía no está configurado.");
+    }
+    if (formData.get("terms") !== "on") {
+      authRedirect("/crear-cuenta", "error", "Acepta los términos para continuar.");
+    }
+    redirect("/auth/entra/start?siguiente=/panel");
   }
 
   if (!isSupabaseConfigured()) {
@@ -115,6 +126,11 @@ export async function signUp(formData: FormData) {
 
 export async function signOut() {
   const provider = getAuthProviderName();
+
+  if (provider === "entra" && isEntraConfigured()) {
+    await revokeCurrentEntraSession();
+    redirect("/auth/entra/sign-out");
+  }
 
   if (provider === "supabase" && isSupabaseConfigured()) {
     const supabase = await createClient();

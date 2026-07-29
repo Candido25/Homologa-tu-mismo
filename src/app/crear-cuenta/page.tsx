@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { signUp } from "@/app/auth/actions";
-import { isSupabaseConfigured } from "@/lib/env";
+import { getAuthProviderName, isAuthProviderConfigured } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Crear cuenta",
@@ -13,7 +13,9 @@ type PageProps = {
 
 export default async function SignUpPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const configured = isSupabaseConfigured();
+  const provider = getAuthProviderName();
+  const configured = isAuthProviderConfigured();
+  const isEntra = provider === "entra";
 
   return (
     <>
@@ -45,7 +47,7 @@ export default async function SignUpPage({ searchParams }: PageProps) {
 
             {!configured && (
               <div className="notice notice-warning" role="status">
-                El registro está construido, pero todavía falta conectar el proyecto de Supabase.
+                El registro de clientes todavía no está configurado para este entorno.
               </div>
             )}
 
@@ -55,38 +57,42 @@ export default async function SignUpPage({ searchParams }: PageProps) {
               </div>
             )}
 
-            <div className="field">
-              <label htmlFor="displayName">Nombre</label>
-              <input
-                id="displayName"
-                name="displayName"
-                type="text"
-                minLength={2}
-                autoComplete="name"
-                required
-              />
-            </div>
+            {!isEntra && (
+              <>
+                <div className="field">
+                  <label htmlFor="displayName">Nombre</label>
+                  <input
+                    id="displayName"
+                    name="displayName"
+                    type="text"
+                    minLength={2}
+                    autoComplete="name"
+                    required
+                  />
+                </div>
 
-            <div className="field">
-              <label htmlFor="email">Correo electrónico</label>
-              <input id="email" name="email" type="email" autoComplete="email" required />
-            </div>
+                <div className="field">
+                  <label htmlFor="email">Correo electrónico</label>
+                  <input id="email" name="email" type="email" autoComplete="email" required />
+                </div>
 
-            <div className="field">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                minLength={8}
-                autoComplete="new-password"
-                aria-describedby="password-help"
-                required
-              />
-              <span id="password-help" className="helper">
-                Utiliza al menos 8 caracteres. Más adelante reforzaremos las reglas y el control de contraseñas filtradas.
-              </span>
-            </div>
+                <div className="field">
+                  <label htmlFor="password">Contraseña</label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minLength={8}
+                    autoComplete="new-password"
+                    aria-describedby="password-help"
+                    required
+                  />
+                  <span id="password-help" className="helper">
+                    Utiliza al menos 8 caracteres. Más adelante reforzaremos las reglas y el control de contraseñas filtradas.
+                  </span>
+                </div>
+              </>
+            )}
 
             <label className="checkbox-field">
               <input name="terms" type="checkbox" required />
@@ -96,7 +102,7 @@ export default async function SignUpPage({ searchParams }: PageProps) {
             </label>
 
             <button className="button auth-submit" type="submit" disabled={!configured}>
-              Crear mi cuenta
+              {isEntra ? "Continuar al registro seguro" : "Crear mi cuenta"}
             </button>
 
             <p className="auth-switch">

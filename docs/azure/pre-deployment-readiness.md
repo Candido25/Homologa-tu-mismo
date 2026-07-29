@@ -94,6 +94,25 @@ Añade:
 
 PostgreSQL no se recomienda en el primer despliegue porque es el componente con mayor consumo esperado del crédito estudiantil.
 
+### Revisión incremental del 29 de julio de 2026
+
+Después del despliegue de la plataforma base, un nuevo `what-if` con PostgreSQL habilitado mostró cuatro creaciones:
+
+1. PostgreSQL Flexible Server `psql-homologa-dev-mv6rxx`.
+2. Base `homologa`.
+3. Regla `AllowAzureServices`.
+4. Secreto `database-url`.
+
+Azure Retail Prices API reportó para Chile Central:
+
+```text
+B1ms: USD 0.0238/hora
+Storage: USD 0.161/GiB/mes
+Estimación 730 horas + 32 GiB: USD 22.53/mes
+```
+
+La estimación supera el presupuesto mensual de USD 8. PostgreSQL debe permanecer sin desplegar hasta aprobar una ventana temporal y un cierre mediante eliminación. La guía completa está en [`postgres-deployment.md`](./postgres-deployment.md).
+
 ## Alcance desplegado
 
 Se creó únicamente la plataforma sin PostgreSQL, alertas documentales ni token de retención:
@@ -135,6 +154,7 @@ El `what-if` final con las identidades OIDC reales terminó en `Succeeded` y mos
 - resolver la discrepancia de Azure Sponsorships;
 - revisar Cost Management cuando el gasto reciente esté disponible;
 - configurar PostgreSQL y Entra External ID antes de habilitar páginas privadas;
+- crear la identidad OIDC y el environment `development-database` antes de migrar;
 - crear el token de retención y probar alertas solo después de una ejecución manual correcta.
 
 ## Criterio de detención

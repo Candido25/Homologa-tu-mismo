@@ -1,6 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { isSupabaseConfigured } from "@/lib/env";
+import { getAuthProviderName, isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   destination.pathname = "/iniciar-sesion";
   destination.search = "";
 
-  if (!isSupabaseConfigured()) {
+  if (getAuthProviderName() !== "supabase" || !isSupabaseConfigured()) {
     destination.searchParams.set("error", "La autenticación todavía no está configurada.");
     return NextResponse.redirect(destination);
   }

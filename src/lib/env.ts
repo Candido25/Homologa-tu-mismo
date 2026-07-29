@@ -57,6 +57,28 @@ export function isLocalTestAuthEnabled() {
   );
 }
 
+export function isEntraConfigured() {
+  return (
+    getAuthProviderName() === "entra" &&
+    isUsable(process.env.ENTRA_TENANT_ID) &&
+    isUsable(process.env.ENTRA_TENANT_SUBDOMAIN) &&
+    isUsable(process.env.ENTRA_CLIENT_ID) &&
+    isUsable(process.env.ENTRA_CLIENT_SECRET) &&
+    isPortableDatabaseConfigured()
+  );
+}
+
+export function getAuthSessionCookieName() {
+  return process.env.APP_ENV === "local" ? "homologa-session" : "__Host-homologa-session";
+}
+
+export function isAuthProviderConfigured() {
+  const provider = getAuthProviderName();
+  if (provider === "local-test") return isLocalTestAuthEnabled();
+  if (provider === "entra") return isEntraConfigured();
+  return isSupabaseConfigured();
+}
+
 export function getLocalTestUserId() {
   if (!isLocalTestAuthEnabled()) {
     throw new Error("La identidad ficticia local no está habilitada.");
