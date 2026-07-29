@@ -64,6 +64,27 @@ export function getLocalTestUserId() {
   return value("LOCAL_TEST_USER_ID");
 }
 
+export function isAzuriteConfigured() {
+  return (
+    process.env.APP_ENV === "local" &&
+    getStorageProviderName() === "azurite" &&
+    isUsable(process.env.AZURE_STORAGE_CONNECTION_STRING)
+  );
+}
+
+export function getAzuriteConfig() {
+  if (!isAzuriteConfigured()) {
+    throw new Error("Azurite todavía no está configurado para el entorno local.");
+  }
+
+  return {
+    connectionString: value("AZURE_STORAGE_CONNECTION_STRING"),
+    caseDocumentsContainer: value("AZURE_STORAGE_CASE_DOCUMENTS_CONTAINER") || "case-documents",
+    generatedReportsContainer:
+      value("AZURE_STORAGE_GENERATED_REPORTS_CONTAINER") || "generated-reports",
+  };
+}
+
 export function isSupabaseConfigured() {
   return (
     isUsable(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
