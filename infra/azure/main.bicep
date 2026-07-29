@@ -7,8 +7,8 @@ targetScope = 'subscription'
 ])
 param environment string = 'dev'
 
-@description('Región principal de Azure.')
-param location string = 'westeurope'
+@description('Región principal de Azure. Debe declararse explícitamente en el archivo de parámetros del entorno.')
+param location string
 
 @description('Nombre corto usado para generar recursos.')
 param projectName string = 'homologa'
