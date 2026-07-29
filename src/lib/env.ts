@@ -143,7 +143,7 @@ const localRetentionJobToken = "local-retention-job-test-only";
 
 export function getDocumentRetentionJobToken() {
   const token = value("DOCUMENT_RETENTION_JOB_TOKEN");
-  if (token.length < 24) {
+  if (token.length < 24 || token.startsWith("@Microsoft.KeyVault(")) {
     throw new Error("El token del proceso de retención no está configurado.");
   }
   if (process.env.APP_ENV !== "local" && token === localRetentionJobToken) {

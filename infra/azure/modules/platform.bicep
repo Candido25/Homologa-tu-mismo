@@ -35,6 +35,13 @@ param postgresAllowAzureServices bool = true
 @description('Crear asignaciones RBAC para la identidad administrada de App Service.')
 param assignManagedIdentityRoles bool = true
 
+@secure()
+@description('Token que protege el endpoint interno de retención documental.')
+param documentRetentionJobToken string = ''
+
+@description('Object ID de la identidad federada autorizada para ejecutar operaciones documentales.')
+param documentOperationsPrincipalId string = ''
+
 var suffix = take(uniqueString(subscription().subscriptionId, resourceGroup().id, environment), 6)
 var normalizedProject = toLower(replace(projectName, '-', ''))
 var storageAccountName = take('st${normalizedProject}${environment}${suffix}', 24)
@@ -46,6 +53,7 @@ var applicationInsightsName = 'appi-${projectName}-${environment}'
 var postgresServerName = take('psql-${projectName}-${environment}-${suffix}', 63)
 var databaseName = 'homologa'
 var databaseUrlSecretName = 'database-url'
+var documentRetentionJobTokenSecretName = 'document-retention-job-token'
 var isFreePlan = appServiceSku == 'F1'
 var commonTags = {
   application: 'Homologa Tu Mismo'
@@ -207,6 +215,14 @@ resource databaseUrlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (
   }
 }
 
+resource documentRetentionJobTokenSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (!empty(documentRetentionJobToken)) {
+  parent: keyVault
+  name: documentRetentionJobTokenSecretName
+  properties: {
+    value: documentRetentionJobToken
+  }
+}
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
   location: location
@@ -256,8 +272,18 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           value: '30'
         }
         {
+          name: 'DOCUMENT_RETENTION_JOB_TOKEN'
+          value: empty(documentRetentionJobToken)
+            ? ''
+            : '@Microsoft.KeyVault(VaultName=${keyVault.name};SecretName=${documentRetentionJobTokenSecretName})'
+        }
+        {
           name: 'AI_PROVIDER'
           value: 'disabled'
+        }
+        {
+          name: 'STORAGE_PROVIDER'
+          value: 'azure-blob'
         }
         {
           name: 'AZURE_STORAGE_ACCOUNT_NAME'
@@ -303,6 +329,26 @@ resource keyVaultSecretsRole 'Microsoft.Authorization/roleAssignments@2022-04-01
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
     principalId: webApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource documentOperationsStorageRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles && !empty(documentOperationsPrincipalId)) {
+  name: guid(storageAccount.id, documentOperationsPrincipalId, storageBlobDataContributorRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
+    principalId: documentOperationsPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource documentOperationsSecretRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles && !empty(documentRetentionJobToken) && !empty(documentOperationsPrincipalId)) {
+  name: guid(documentRetentionJobTokenSecret!.id, documentOperationsPrincipalId, keyVaultSecretsUserRoleId)
+  scope: documentRetentionJobTokenSecret
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    principalId: documentOperationsPrincipalId
     principalType: 'ServicePrincipal'
   }
 }

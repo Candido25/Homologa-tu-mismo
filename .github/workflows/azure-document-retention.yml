@@ -1,0 +1,115 @@
+name: Retención documental Azure
+
+on:
+  schedule:
+    - cron: '23 8 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Máximo de documentos vencidos por ejecución'
+        required: true
+        default: '100'
+        type: choice
+        options:
+          - '25'
+          - '50'
+          - '100'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-document-retention-development
+  cancel-in-progress: false
+
+jobs:
+  retention:
+    name: Eliminar documentos vencidos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: development-operations
+    env:
+      APP_BASE_URL: ${{ vars.AZURE_APP_URL }}
+      KEY_VAULT_NAME: ${{ vars.AZURE_KEY_VAULT_NAME }}
+      RETENTION_LIMIT: ${{ inputs.limit || '100' }}
+
+    steps:
+      - name: Validar configuración operativa
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$APP_BASE_URL" || { echo "Falta la variable AZURE_APP_URL."; exit 1; }
+          test -n "$KEY_VAULT_NAME" || { echo "Falta la variable AZURE_KEY_VAULT_NAME."; exit 1; }
+          case "$APP_BASE_URL" in
+            https://*) ;;
+            *) echo "AZURE_APP_URL debe usar HTTPS."; exit 1 ;;
+          esac
+
+      - name: Iniciar sesión en Azure con OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ejecutar retención documental
+        id: retention
+        shell: bash
+        run: |
+          set -euo pipefail
+          retention_token="$(az keyvault secret show \
+            --vault-name "$KEY_VAULT_NAME" \
+            --name document-retention-job-token \
+            --query value \
+            --output tsv)"
+
+          test -n "$retention_token" || { echo "Key Vault devolvió un token vacío."; exit 1; }
+          echo "::add-mask::$retention_token"
+
+          response_file="$RUNNER_TEMP/document-retention-response.json"
+          status="$(curl \
+            --silent \
+            --show-error \
+            --retry 3 \
+            --retry-all-errors \
+            --connect-timeout 15 \
+            --max-time 180 \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $retention_token" \
+            "${APP_BASE_URL%/}/api/internal/retencion-documental?limit=$RETENTION_LIMIT")"
+
+          if [ "$status" != "200" ]; then
+            echo "La retención respondió HTTP $status."
+            exit 1
+          fi
+
+          jq -e '
+            .ok == true and
+            (.scanned | type == "number") and
+            (.deleted | type == "number") and
+            (.skipped | type == "number") and
+            .failed == 0
+          ' "$response_file" > /dev/null
+
+          echo "scanned=$(jq -r '.scanned' "$response_file")" >> "$GITHUB_OUTPUT"
+          echo "deleted=$(jq -r '.deleted' "$response_file")" >> "$GITHUB_OUTPUT"
+          echo "skipped=$(jq -r '.skipped' "$response_file")" >> "$GITHUB_OUTPUT"
+          echo "failed=$(jq -r '.failed' "$response_file")" >> "$GITHUB_OUTPUT"
+
+      - name: Publicar resumen operativo
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Retención documental"
+            echo
+            echo "| Métrica | Resultado |"
+            echo "| --- | ---: |"
+            echo "| Revisados | ${{ steps.retention.outputs.scanned || 'sin resultado' }} |"
+            echo "| Eliminados | ${{ steps.retention.outputs.deleted || 'sin resultado' }} |"
+            echo "| Omitidos | ${{ steps.retention.outputs.skipped || 'sin resultado' }} |"
+            echo "| Fallidos | ${{ steps.retention.outputs.failed || 'sin resultado' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

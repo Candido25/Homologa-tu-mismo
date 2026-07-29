@@ -1,0 +1,56 @@
+name: Probar recuperación documental Azure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-document-recovery-development
+  cancel-in-progress: false
+
+jobs:
+  recovery:
+    name: Eliminar y recuperar un blob ficticio
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: development-operations
+    env:
+      APP_ENV: development
+      AZURE_RECOVERY_TEST_ALLOWED: 'true'
+      AZURE_STORAGE_ACCOUNT_NAME: ${{ vars.AZURE_STORAGE_ACCOUNT_NAME }}
+      AZURE_STORAGE_CASE_DOCUMENTS_CONTAINER: case-documents
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v5
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          package-manager-cache: false
+
+      - name: Instalar dependencias
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Iniciar sesión en Azure con OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validar borrado recuperable
+        run: npm run azure:verify-recovery
+
+      - name: Publicar resultado
+        if: success()
+        run: |
+          {
+            echo "## Recuperación documental"
+            echo
+            echo "La carga, eliminación, recuperación e integridad del blob ficticio fueron verificadas."
+          } >> "$GITHUB_STEP_SUMMARY"

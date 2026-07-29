@@ -47,6 +47,13 @@ param postgresAllowAzureServices bool = true
 @description('Crear asignaciones RBAC para la identidad administrada de App Service. Puede desactivarse en what-if con permisos limitados.')
 param assignManagedIdentityRoles bool = true
 
+@secure()
+@description('Token que protege el endpoint interno de retención. Omitir hasta desplegar la aplicación.')
+param documentRetentionJobToken string = ''
+
+@description('Object ID de la identidad federada que ejecutará operaciones documentales desde GitHub Actions.')
+param documentOperationsPrincipalId string = ''
+
 var resourceGroupName = 'rg-${projectName}-${environment}'
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -75,6 +82,8 @@ module platform './modules/platform.bicep' = {
     postgresStorageGiB: postgresStorageGiB
     postgresAllowAzureServices: postgresAllowAzureServices
     assignManagedIdentityRoles: assignManagedIdentityRoles
+    documentRetentionJobToken: documentRetentionJobToken
+    documentOperationsPrincipalId: documentOperationsPrincipalId
   }
 }
 

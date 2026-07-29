@@ -20,6 +20,7 @@
     "app:verify-local": "node scripts/verify-local-web-flow.mjs",
     "documents:verify-local": "node scripts/verify-local-document-flow.mjs",
     "retention:verify-local": "node scripts/verify-local-retention.mjs",
+    "azure:verify-recovery": "node scripts/verify-azure-document-recovery.mjs",
     "security:verify-local": "node scripts/verify-local-isolation.mjs",
     "storage:verify": "node scripts/verify-azurite.mjs"
   },

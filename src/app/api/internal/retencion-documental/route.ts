@@ -39,6 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await getDocumentRetentionService().run(limit);
+    console.info("document_retention_job_completed", result);
     return NextResponse.json(
       {
         ok: result.failed === 0,
