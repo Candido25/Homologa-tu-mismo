@@ -1,0 +1,73 @@
+# GitHub OIDC para Azure Students
+
+## Objetivo
+
+Permitir que GitHub Actions ejecute `what-if` contra Azure sin guardar contraseñas ni credenciales permanentes en el repositorio.
+
+## Resultado esperado
+
+- GitHub Environment: `development`.
+- Secrets del environment:
+  - `AZURE_CLIENT_ID`
+  - `AZURE_TENANT_ID`
+  - `AZURE_SUBSCRIPTION_ID`
+  - `POSTGRES_ADMIN_PASSWORD`
+- Una aplicación o identidad federada en Microsoft Entra ID.
+- Permisos mínimos para ejecutar `az deployment sub what-if`.
+
+## Configuración en GitHub
+
+1. Abrir el repositorio `Candido25/Homologa-tu-mismo`.
+2. Ir a **Settings > Environments**.
+3. Crear el environment `development`.
+4. Activar aprobación manual si se va a permitir despliegue real más adelante.
+5. Crear los secrets del environment:
+   - `AZURE_CLIENT_ID`: client id de la aplicación registrada en Entra.
+   - `AZURE_TENANT_ID`: tenant id de Entra.
+   - `AZURE_SUBSCRIPTION_ID`: id de la suscripción Azure for Students.
+   - `POSTGRES_ADMIN_PASSWORD`: contraseña segura para PostgreSQL cuando se simule o despliegue.
+
+## Configuración en Azure
+
+1. Crear o seleccionar una App Registration para GitHub Actions.
+2. Crear una credencial federada con estos datos:
+
+```text
+Issuer: https://token.actions.githubusercontent.com
+Subject: repo:Candido25/Homologa-tu-mismo:environment:development
+Audience: api://AzureADTokenExchange
+```
+
+3. Asignar permisos mínimos sobre la suscripción Azure for Students.
+
+Para `what-if` a nivel suscripción se necesita lectura de la suscripción y capacidad de validar despliegues. Para despliegue real se necesitará un rol más amplio, como Contributor, pero no debe concederse hasta aprobar el flujo de creación.
+
+## Uso
+
+1. Ir a **Actions > Azure what-if**.
+2. Seleccionar **Run workflow**.
+3. Para simulación sin base de datos:
+
+```text
+deployPostgres=false
+appServiceSku=F1
+```
+
+4. Para simulación con PostgreSQL mínimo:
+
+```text
+deployPostgres=true
+appServiceSku=F1
+postgresSkuName=B_Standard_B1ms
+```
+
+5. Revisar la salida `Resource changes`.
+6. No ejecutar despliegue real hasta entender costo, región, nombres globales y recursos creados.
+
+## Control de gasto
+
+- Mantener App Service en `F1` mientras sea posible.
+- Mantener PostgreSQL desactivado hasta necesitar integración real.
+- Cuando PostgreSQL se active, usar `B_Standard_B1ms` y apagar o eliminar recursos si no se usan.
+- Revisar Cost Management después de cada simulación o despliegue.
+- Mantener alertas al 50 %, 80 % y 100 % del crédito disponible.

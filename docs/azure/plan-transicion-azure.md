@@ -73,7 +73,9 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 - [ ] Crear identidad de despliegue con OpenID Connect.
 - [ ] Configurar GitHub Environment `development`.
-- [ ] Crear workflow de infraestructura con `what-if` y aprobación manual.
+- [x] Documentar configuración OIDC de GitHub Actions para Azure Students.
+- [x] Crear workflow manual de infraestructura con `what-if`.
+- [ ] Añadir aprobación manual al GitHub Environment `development`.
 - [ ] Crear workflow de aplicación para Azure App Service.
 - [ ] Verificar que GitHub no almacene secretos permanentes de Azure.
 

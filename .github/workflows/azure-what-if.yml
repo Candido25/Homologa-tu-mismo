@@ -1,0 +1,87 @@
+name: Azure what-if
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployPostgres:
+        description: 'Incluir Azure Database for PostgreSQL Flexible Server en la simulación'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      appServiceSku:
+        description: 'SKU de App Service para desarrollo'
+        required: true
+        default: 'F1'
+        type: choice
+        options:
+          - F1
+          - B1
+      postgresSkuName:
+        description: 'SKU PostgreSQL si deployPostgres=true'
+        required: true
+        default: 'B_Standard_B1ms'
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  what-if:
+    name: Simular infraestructura Azure
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: development
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v5
+
+      - name: Iniciar sesión en Azure con OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Instalar Bicep CLI
+        run: az bicep install
+
+      - name: Compilar plantilla principal
+        run: az bicep build --file infra/azure/main.bicep --stdout > /tmp/homologa-main.json
+
+      - name: Compilar parámetros de desarrollo
+        run: az bicep build-params --file infra/azure/parameters/dev.bicepparam --stdout > /tmp/homologa-dev-parameters.json
+
+      - name: Validar contraseña PostgreSQL
+        if: ${{ inputs.deployPostgres == 'true' }}
+        env:
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+        run: |
+          if [ -z "$POSTGRES_ADMIN_PASSWORD" ]; then
+            echo "POSTGRES_ADMIN_PASSWORD debe existir como secreto del environment development."
+            exit 1
+          fi
+
+      - name: Ejecutar what-if sin PostgreSQL
+        if: ${{ inputs.deployPostgres == 'false' }}
+        run: |
+          az deployment sub what-if \
+            --location chilecentral \
+            --template-file infra/azure/main.bicep \
+            --parameters infra/azure/parameters/dev.bicepparam \
+            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=false
+
+      - name: Ejecutar what-if con PostgreSQL
+        if: ${{ inputs.deployPostgres == 'true' }}
+        env:
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+        run: |
+          az deployment sub what-if \
+            --location chilecentral \
+            --template-file infra/azure/main.bicep \
+            --parameters infra/azure/parameters/dev.bicepparam \
+            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=true postgresSkuName='${{ inputs.postgresSkuName }}' postgresAdminPassword="$POSTGRES_ADMIN_PASSWORD"

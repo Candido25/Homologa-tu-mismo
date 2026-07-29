@@ -61,6 +61,17 @@ az deployment sub what-if \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
 
+También existe el workflow manual **Azure what-if** en GitHub Actions. Requiere un GitHub Environment llamado `development` con estos secretos:
+
+- `AZURE_CLIENT_ID`
+- `AZURE_TENANT_ID`
+- `AZURE_SUBSCRIPTION_ID`
+- `POSTGRES_ADMIN_PASSWORD` si se simula PostgreSQL
+
+La identidad federada de Azure debe confiar en el repositorio y en el environment `development`.
+
+La guía paso a paso está en [`docs/azure/github-oidc-development.md`](../../docs/azure/github-oidc-development.md).
+
 Para incluir PostgreSQL en la simulación o despliegue de desarrollo, pasar parámetros explícitos y una contraseña segura fuera del repositorio:
 
 ```bash
