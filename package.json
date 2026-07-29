@@ -1,6 +1,6 @@
 {
   "name": "homologa-tu-mismo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "engines": {
     "node": ">=22 <23"
@@ -9,7 +9,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "local:up": "docker compose up -d --wait",
+    "local:status": "docker compose ps",
+    "local:down": "docker compose down",
+    "local:reset": "docker compose down -v && docker compose up -d --wait && npm run db:migrate && npm run db:seed",
+    "db:migrate": "docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U homologa -d homologa -f /database/migrations/0001_portable_core.sql",
+    "db:seed": "docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U homologa -d homologa -f /database/seeds/0001_reference_data.sql && docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U homologa -d homologa -f /database/seeds/9000_local_test_fixtures.sql",
+    "db:verify": "docker compose exec -T postgres psql -U homologa -d homologa -c \"select version, applied_at from schema_migrations order by applied_at;\""
   },
   "dependencies": {
     "@supabase/ssr": "0.12.3",
