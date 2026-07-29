@@ -54,6 +54,7 @@ Las decisiones están documentadas en:
 
 - [`ADR-002 — Plataforma integral Azure`](docs/architecture/ADR-002-plataforma-integral-azure.md)
 - [`ADR-003 — Fronteras portables`](docs/architecture/ADR-003-fronteras-portables.md)
+- [`Preparación para el primer despliegue Azure`](docs/azure/pre-deployment-readiness.md)
 
 ## Regla de control de gasto
 

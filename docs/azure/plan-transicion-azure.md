@@ -27,8 +27,8 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Validar Bicep mediante GitHub Actions.
 - [ ] Confirmar el saldo y la fecha de renovación de Azure for Students.
 - [ ] Resolver la discrepancia: suscripción activa en Azure Portal, sin sponsorship activo en Azure Sponsorships.
-- [ ] Confirmar nombres globales disponibles.
-- [ ] Documentar el criterio económico y operativo para pasar de Azure for Students a pago por uso.
+- [x] Validar los nombres previstos mediante `what-if` en la suscripción de destino.
+- [x] Documentar el criterio económico y operativo para pasar de Azure for Students a pago por uso.
 
 ### Fase 1 — Infraestructura de desarrollo
 
@@ -45,6 +45,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 ### Fase 2 — Base de datos PostgreSQL
 
 - [x] Elegir SKU inicial mínimo de desarrollo: `B_Standard_B1ms`, 32 GiB, Burstable.
+- [x] Validar mediante `what-if` el escenario opcional con PostgreSQL mínimo.
 - [ ] Crear Azure Database for PostgreSQL Flexible Server de desarrollo mediante Bicep opcional.
 - [x] Adaptar el esquema para eliminar dependencias de `auth.users`, `auth.uid()` y `storage.*`.
 - [x] Crear migraciones portables.

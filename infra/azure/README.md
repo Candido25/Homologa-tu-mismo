@@ -101,6 +101,25 @@ Potential changes: 1 to create
 
 El cambio potencial corresponde a `document-retention-job-token`: Azure no puede resolver por adelantado la condición de un parámetro seguro. El despliegue real solo debe proporcionar ese token cuando Key Vault y la automatización documental vayan a activarse.
 
+La simulación opcional con PostgreSQL `B_Standard_B1ms` también fue aprobada:
+
+```text
+Resource changes: 14 to create
+Potential changes: 1 to create
+```
+
+El workflow genera una contraseña efímera para esta simulación y no necesita conservarla en GitHub. La evidencia y el alcance recomendado están en [`docs/azure/pre-deployment-readiness.md`](../../docs/azure/pre-deployment-readiness.md).
+
+Una simulación local adicional, ejecutada con rol `Owner` y las asignaciones RBAC activadas, mostró:
+
+```text
+Resource changes: 12 to create
+Potential changes: 2 to create
+Status: Succeeded
+```
+
+Este es el conteo representativo del primer despliegue recomendado: 10 componentes de plataforma y 2 asignaciones de identidad administrada.
+
 No se conserva en esta guía ningún comando de creación para reducir el riesgo de despliegue accidental.
 
 ## Producción
