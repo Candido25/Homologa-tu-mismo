@@ -100,15 +100,17 @@ Los contenedores previstos son:
 - `case-documents`
 - `generated-reports`
 
-El adaptador `AzuriteDocumentStorage`:
+Los adaptadores `AzuriteDocumentStorage` y `AzureBlobDocumentStorage` comparten estas reglas:
 
-- crea los contenedores sin acceso público;
+- usa contenedores privados sin acceso público;
 - genera rutas con usuario, expediente y documento;
 - admite únicamente PDF, JPEG y PNG;
 - rechaza archivos vacíos o superiores a 25 MB;
 - calcula SHA-256 antes de guardar y lo comprueba al leer;
 - rechaza rutas fuera del patrón autorizado;
 - permite leer y eliminar objetos mediante el contrato portable.
+
+`AzureBlobDocumentStorage` usa identidad administrada mediante `DefaultAzureCredential`; no debe usar claves de cuenta ni variables `NEXT_PUBLIC_*`.
 
 La interfaz de carga para usuarios sigue desactivada. El adaptador se valida únicamente con contenido ficticio hasta terminar las pruebas de autorización y metadatos.
 

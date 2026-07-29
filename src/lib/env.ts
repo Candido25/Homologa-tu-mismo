@@ -85,6 +85,23 @@ export function getAzuriteConfig() {
   };
 }
 
+export function isAzureBlobConfigured() {
+  return getStorageProviderName() === "azure-blob" && isUsable(process.env.AZURE_STORAGE_ACCOUNT_NAME);
+}
+
+export function getAzureBlobConfig() {
+  if (!isAzureBlobConfigured()) {
+    throw new Error("Azure Blob Storage todavía no está configurado.");
+  }
+
+  return {
+    accountName: value("AZURE_STORAGE_ACCOUNT_NAME"),
+    caseDocumentsContainer: value("AZURE_STORAGE_CASE_DOCUMENTS_CONTAINER") || "case-documents",
+    generatedReportsContainer:
+      value("AZURE_STORAGE_GENERATED_REPORTS_CONTAINER") || "generated-reports",
+  };
+}
+
 export function isSupabaseConfigured() {
   return (
     isUsable(process.env.NEXT_PUBLIC_SUPABASE_URL) &&

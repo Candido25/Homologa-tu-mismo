@@ -62,11 +62,13 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 ### Fase 4 — Documentos
 
-- [ ] Sustituir Supabase Storage por Azure Blob Storage.
+- [x] Implementar adaptador Azure Blob Storage con identidad administrada.
+- [ ] Sustituir Supabase Storage por Azure Blob Storage en el flujo de usuario.
 - [ ] Mantener contenedores `case-documents` y `generated-reports` privados.
-- [ ] Implementar rutas de blob por usuario y expediente.
+- [x] Implementar rutas de blob por usuario y expediente.
 - [ ] Generar acceso temporal únicamente desde el servidor.
-- [ ] Aplicar límites de tamaño, tipo MIME, retención y borrado.
+- [x] Aplicar límites de tamaño, tipo MIME, hash y borrado en el adaptador.
+- [ ] Aplicar política de retención documental completa.
 - [ ] Probar únicamente con archivos ficticios durante desarrollo.
 
 ### Fase 5 — Despliegue continuo de desarrollo

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient, type ContainerClient } from "@azure/storage-blob";
 import type {
   DocumentStorage,
@@ -14,16 +15,20 @@ import {
   requireDocumentPath,
   validateContent,
 } from "@/adapters/storage/document-storage-rules";
-import { getAzuriteConfig } from "@/lib/env";
+import { getAzureBlobConfig } from "@/lib/env";
 
-export class AzuriteDocumentStorage implements DocumentStorage {
+export class AzureBlobDocumentStorage implements DocumentStorage {
   private readonly service: BlobServiceClient;
   private readonly caseDocumentsContainer: string;
   private readonly allowedContainers: Set<string>;
 
   constructor() {
-    const config = getAzuriteConfig();
-    this.service = BlobServiceClient.fromConnectionString(config.connectionString);
+    const config = getAzureBlobConfig();
+    const credential = new DefaultAzureCredential();
+    this.service = new BlobServiceClient(
+      `https://${config.accountName}.blob.core.windows.net`,
+      credential,
+    );
     this.caseDocumentsContainer = config.caseDocumentsContainer;
     this.allowedContainers = new Set([
       config.caseDocumentsContainer,
@@ -41,12 +46,9 @@ export class AzuriteDocumentStorage implements DocumentStorage {
   async store(input: StoreDocumentInput): Promise<StoredDocumentObject> {
     validateContent(input);
 
-    const container = this.container(this.caseDocumentsContainer);
-    await container.createIfNotExists();
-
     const path = documentPath(input);
     const sha256 = hash(input.content);
-    const blob = container.getBlockBlobClient(path);
+    const blob = this.container(this.caseDocumentsContainer).getBlockBlobClient(path);
 
     await blob.uploadData(input.content, {
       blobHTTPHeaders: {
@@ -61,7 +63,7 @@ export class AzuriteDocumentStorage implements DocumentStorage {
     });
 
     return {
-      provider: "azurite",
+      provider: "azure_blob",
       container: this.caseDocumentsContainer,
       path,
       sizeBytes: input.content.byteLength,
@@ -71,7 +73,9 @@ export class AzuriteDocumentStorage implements DocumentStorage {
   }
 
   async read(object: StoredDocumentObject): Promise<ReadDocumentResult> {
-    if (object.provider !== "azurite") throw new Error("Proveedor de almacenamiento no compatible.");
+    if (object.provider !== "azure_blob") {
+      throw new Error("Proveedor de almacenamiento no compatible.");
+    }
 
     const path = requireDocumentPath(object.path);
     const blob = this.container(object.container).getBlockBlobClient(path);
@@ -92,7 +96,9 @@ export class AzuriteDocumentStorage implements DocumentStorage {
   }
 
   async delete(object: StoredDocumentObject): Promise<void> {
-    if (object.provider !== "azurite") throw new Error("Proveedor de almacenamiento no compatible.");
+    if (object.provider !== "azure_blob") {
+      throw new Error("Proveedor de almacenamiento no compatible.");
+    }
     const path = requireDocumentPath(object.path);
     await this.container(object.container).getBlockBlobClient(path).deleteIfExists({
       deleteSnapshots: "include",

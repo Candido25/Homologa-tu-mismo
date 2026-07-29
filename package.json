@@ -20,6 +20,7 @@
     "storage:verify": "node scripts/verify-azurite.mjs"
   },
   "dependencies": {
+    "@azure/identity": "4.13.0",
     "@azure/storage-blob": "12.33.0",
     "@supabase/ssr": "0.12.3",
     "@supabase/supabase-js": "2.110.9",

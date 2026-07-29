@@ -4,6 +4,7 @@ import { PostgresCaseRepository } from "@/adapters/cases/postgres-case-repositor
 import { SupabaseCaseRepository } from "@/adapters/cases/supabase-case-repository";
 import { LocalTestCurrentUserProvider } from "@/adapters/identity/local-test-current-user";
 import { SupabaseCurrentUserProvider } from "@/adapters/identity/supabase-current-user";
+import { AzureBlobDocumentStorage } from "@/adapters/storage/azure-blob-document-storage";
 import { AzuriteDocumentStorage } from "@/adapters/storage/azurite-document-storage";
 import type { CaseRepository } from "@/core/cases/case-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
@@ -13,6 +14,7 @@ import {
   getDatabaseProviderName,
   getStorageProviderName,
   isApplicationDataConfigured,
+  isAzureBlobConfigured,
   isAzuriteConfigured,
   isLocalTestAuthEnabled,
   isSupabaseConfigured,
@@ -50,7 +52,8 @@ export function getDocumentStorage(): DocumentStorage {
   }
 
   if (provider === "azure-blob") {
-    throw new Error("El adaptador Azure Blob con identidad administrada todavía no está implementado.");
+    if (!isAzureBlobConfigured()) throw new Error("Azure Blob Storage no está configurado.");
+    return new AzureBlobDocumentStorage();
   }
 
   throw new Error("El adaptador heredado de Supabase Storage no está habilitado.");
