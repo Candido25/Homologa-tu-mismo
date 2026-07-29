@@ -33,6 +33,7 @@ npm run db:verify
 npm run security:verify-local
 npm run storage:verify
 npm run dev
+npm run app:verify-local
 ```
 
 En PowerShell, la copia del archivo puede hacerse con:
@@ -53,6 +54,7 @@ npm run db:seed        # agrega referencias y datos ficticios
 npm run db:verify      # verifica el historial de migraciones
 npm run security:verify-local # valida aislamiento entre dos usuarios ficticios
 npm run storage:verify # prueba contenedor privado, carga, lectura y eliminación
+npm run app:verify-local # valida el flujo web local con Next.js iniciado
 npm run local:down     # detiene los servicios sin borrar datos
 npm run local:reset    # borra volúmenes y reconstruye todo
 ```
@@ -84,6 +86,9 @@ Cada usuario tiene un expediente propio. El valor de `LOCAL_TEST_USER_ID` selecc
 Para cambiar de usuario de prueba, editar `.env.local`, reiniciar `npm run dev` y usar uno de los UUID anteriores.
 
 `npm run security:verify-local` usa esos dos usuarios y falla si alguno puede listar o abrir por ID el expediente del otro.
+
+Con `npm run dev` en ejecución, `npm run app:verify-local` comprueba salud, diagnóstico,
+bloqueo de origen cruzado, panel del usuario ficticio A y denegación del expediente del usuario ficticio B.
 
 ## Almacenamiento local
 
