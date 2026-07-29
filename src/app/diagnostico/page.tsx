@@ -118,19 +118,31 @@ export default function DiagnosticoPage() {
   return (
     <>
       <section className="page-header">
-        <div className="container">
-          <p className="eyebrow">Diagnóstico preliminar</p>
-          <h1>Descubre qué ruta puede corresponderte.</h1>
-          <p>
-            Responde tres preguntas iniciales. Este resultado es orientativo y todavía no sustituye
-            la revisión completa del expediente ni la decisión de la autoridad competente.
-          </p>
+        <div className="container page-header-grid">
+          <div>
+            <p className="eyebrow">Diagnóstico preliminar</p>
+            <h1>Descubre qué ruta puede corresponderte.</h1>
+            <p>
+              Responde tres preguntas iniciales. Este resultado es orientativo y todavía no sustituye
+              la revisión completa del expediente ni la decisión de la autoridad competente.
+            </p>
+          </div>
+          <div className="header-mini-panel" aria-label="Estado del diagnóstico">
+            <span>Tiempo estimado</span>
+            <strong>2 min</strong>
+            <p>Sin documentos reales en esta etapa.</p>
+          </div>
         </div>
       </section>
 
       <section className="section">
         <div className="container form-shell">
           <form className="form-card" onSubmit={handleSubmit}>
+            <div className="form-card-heading">
+              <span className="result-label">Paso 1</span>
+              <h2>Datos de tu título</h2>
+              <p>La ruta inicial se calcula con información estructurada, no con una conversación libre.</p>
+            </div>
             <div className="field-grid">
               <div className="field">
                 <label htmlFor="country">País donde obtuviste el título</label>
@@ -200,7 +212,10 @@ export default function DiagnosticoPage() {
                 <span className="result-label">Resultado preliminar</span>
                 <h2>{result.route}</h2>
                 <p>{result.explanation}</p>
-                <strong>Nivel de orientación: {result.confidence}</strong>
+                <div className="confidence-meter">
+                  <span>Nivel de orientación</span>
+                  <strong>{result.confidence}</strong>
+                </div>
                 <h3>Próximos pasos</h3>
                 <ul>
                   {result.nextSteps.map((step) => (
@@ -222,6 +237,11 @@ export default function DiagnosticoPage() {
                 <p>
                   Después podrás guardarla como expediente y continuar el proceso desde tu panel privado.
                 </p>
+                <div className="result-placeholder-list" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </>
             )}
           </aside>

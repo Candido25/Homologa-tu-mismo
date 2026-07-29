@@ -40,6 +40,13 @@ const statusLabels: Record<string, string> = {
   closed: "Cerrado",
 };
 
+const documentPreview = [
+  { name: "Documento de identidad", status: "Pendiente" },
+  { name: "Título universitario", status: "Pendiente" },
+  { name: "Certificado académico", status: "Pendiente" },
+  { name: "Apostilla o legalización", status: "Pendiente" },
+];
+
 function readPayload(value: unknown): DiagnosticPayload {
   return value && typeof value === "object" ? (value as DiagnosticPayload) : {};
 }
@@ -84,23 +91,33 @@ export default async function CasePage({ params }: PageProps) {
             <h1>{caseItem.degreeName}</h1>
             <p>{result?.route || caseItem.title}</p>
           </div>
-          <Link className="button button-secondary" href="/panel">
-            Volver al panel
-          </Link>
+          <div className="case-header-actions">
+            <Link className="button" href="/diagnostico">
+              Nuevo diagnóstico
+            </Link>
+            <Link className="button button-secondary" href="/panel">
+              Volver al panel
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="section dashboard-section">
         <div className="container case-detail-layout">
           <div className="case-detail-main">
-            <article className="detail-card">
+            <article className="detail-card detail-hero-card">
               <div className="case-card-topline">
                 <span className="result-label">Orientación preliminar</span>
                 <small>Creado el {formatDate(caseItem.createdAt)}</small>
               </div>
               <h2>{result?.route || "Ruta por determinar"}</h2>
               <p>{result?.explanation || "Este expediente todavía necesita completar su diagnóstico."}</p>
-              {result?.confidence ? <strong>Nivel de orientación: {result.confidence}</strong> : null}
+              {result?.confidence ? (
+                <div className="confidence-meter compact-confidence">
+                  <span>Nivel de orientación</span>
+                  <strong>{result.confidence}</strong>
+                </div>
+              ) : null}
             </article>
 
             <article className="detail-card">
@@ -117,6 +134,22 @@ export default async function CasePage({ params }: PageProps) {
               <p className="disclaimer">
                 Estas indicaciones son organizativas y no sustituyen la normativa ni la decisión de la autoridad.
               </p>
+            </article>
+
+            <article className="detail-card">
+              <div className="panel-heading">
+                <span className="result-label">Preparación</span>
+                <h2>Checklist documental previsto</h2>
+                <p>La carga se mantiene desactivada hasta terminar las pruebas de seguridad con datos ficticios.</p>
+              </div>
+              <div className="document-check-grid">
+                {documentPreview.map((document) => (
+                  <div className="document-check-item" key={document.name}>
+                    <span>{document.name}</span>
+                    <strong>{document.status}</strong>
+                  </div>
+                ))}
+              </div>
             </article>
           </div>
 
@@ -145,8 +178,18 @@ export default async function CasePage({ params }: PageProps) {
 
             <article className="detail-card locked-feature">
               <span className="result-label">Próxima fase</span>
-              <h2>Checklist documental</h2>
-              <p>Se habilitará después de validar identidad, aislamiento y privacidad con usuarios ficticios.</p>
+              <h2>Archivos privados</h2>
+              <p>Azure Blob Storage ya tiene adaptador. La interfaz se habilitará cuando validemos aislamiento y retención.</p>
+            </article>
+
+            <article className="detail-card">
+              <h2>Línea de trabajo</h2>
+              <ol className="case-timeline">
+                <li className="is-complete">Diagnóstico creado</li>
+                <li>Documentos por organizar</li>
+                <li>Revisión previa pendiente</li>
+                <li>Presentación oficial externa</li>
+              </ol>
             </article>
           </aside>
         </div>

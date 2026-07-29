@@ -18,17 +18,27 @@ export default async function SignUpPage({ searchParams }: PageProps) {
   return (
     <>
       <section className="page-header">
-        <div className="container narrow-container">
-          <p className="eyebrow">Empieza tu ruta</p>
-          <h1>Crea tu cuenta</h1>
-          <p>Guarda tus datos iniciales y construye tu expediente paso a paso.</p>
+        <div className="container auth-hero-grid">
+          <div>
+            <p className="eyebrow">Empieza tu ruta</p>
+            <h1>Crea tu cuenta de preparación.</h1>
+            <p>Guarda tu diagnóstico y construye un expediente privado antes de presentar cualquier trámite oficial.</p>
+          </div>
+          <div className="auth-status-card">
+            <span>Etapa actual</span>
+            <strong>Validación</strong>
+            <p>Sin documentos reales ni pagos en esta fase.</p>
+          </div>
         </div>
       </section>
 
       <section className="section auth-section">
         <div className="container auth-layout">
           <form className="form-card auth-card" action={signUp}>
-            <h2>Datos de acceso</h2>
+            <div className="auth-card-heading">
+              <span className="result-label">Cuenta privada</span>
+              <h2>Datos de acceso</h2>
+            </div>
             <p className="helper">
               En esta etapa no te pediremos pasaporte, título ni documentos personales.
             </p>
@@ -106,6 +116,11 @@ export default async function SignUpPage({ searchParams }: PageProps) {
               <li>Datos mínimos para crear la cuenta.</li>
               <li>Documentos sensibles desactivados en esta fase.</li>
             </ul>
+            <div className="auth-security-strip">
+              <span>Identidad</span>
+              <span>Diagnóstico</span>
+              <span>Expediente</span>
+            </div>
           </aside>
         </div>
       </section>

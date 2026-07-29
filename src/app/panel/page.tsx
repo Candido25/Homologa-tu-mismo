@@ -37,6 +37,13 @@ const procedureLabels: Record<string, string> = {
   undetermined: "Ruta por determinar",
 };
 
+const workspaceSteps = [
+  "Diagnóstico guardado",
+  "Checklist documental",
+  "Revisión previa",
+  "Presentación oficial",
+];
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es", {
     day: "2-digit",
@@ -80,6 +87,7 @@ export default async function DashboardPage() {
   }
 
   const displayName = user.displayName || user.email?.split("@")[0] || "usuario";
+  const hasCases = cases.length > 0;
 
   return (
     <>
@@ -90,11 +98,16 @@ export default async function DashboardPage() {
             <h1>Hola, {displayName}</h1>
             <p>Organiza tus rutas y continúa desde el último paso registrado.</p>
           </div>
-          <form action={signOut}>
-            <button className="button button-secondary" type="submit">
-              Cerrar sesión
-            </button>
-          </form>
+          <div className="dashboard-actions">
+            <Link className="button" href="/diagnostico">
+              Nuevo diagnóstico
+            </Link>
+            <form action={signOut}>
+              <button className="button button-secondary" type="submit">
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
@@ -113,9 +126,40 @@ export default async function DashboardPage() {
             </article>
             <article className="metric-card">
               <span>Próximo paso</span>
-              <strong>{cases.length ? "Abrir expediente" : "Diagnóstico"}</strong>
-              <small>{cases.length ? "continúa tu ruta" : "define primero tu ruta"}</small>
+              <strong>{hasCases ? "Abrir expediente" : "Diagnóstico"}</strong>
+              <small>{hasCases ? "continúa tu ruta" : "define primero tu ruta"}</small>
             </article>
+          </div>
+
+          <div className="workspace-grid">
+            <section className="workspace-panel">
+              <div className="panel-heading">
+                <span className="result-label">Ruta de trabajo</span>
+                <h2>Avance del expediente</h2>
+                <p>Estados internos para ordenar tu preparación antes de ir al portal oficial.</p>
+              </div>
+              <ol className="workspace-steps">
+                {workspaceSteps.map((step, index) => (
+                  <li className={index === 0 && hasCases ? "is-complete" : ""} key={step}>
+                    <span>{index + 1}</span>
+                    <strong>{step}</strong>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <aside className="workspace-panel next-action-panel">
+              <span className="result-label">Siguiente acción</span>
+              <h2>{hasCases ? "Revisar expediente reciente" : "Crear primera ruta"}</h2>
+              <p>
+                {hasCases
+                  ? "Abre tu expediente más reciente y revisa los pasos recomendados."
+                  : "Completa el diagnóstico preliminar para guardar una ruta inicial."}
+              </p>
+              <Link className="button" href={hasCases ? `/panel/expedientes/${cases[0].id}` : "/diagnostico"}>
+                {hasCases ? "Continuar expediente" : "Comenzar diagnóstico"}
+              </Link>
+            </aside>
           </div>
 
           <div className="dashboard-toolbar">
@@ -123,9 +167,6 @@ export default async function DashboardPage() {
               <h2>Mis expedientes</h2>
               <p>Los estados mostrados son organizativos y no representan información oficial del Ministerio.</p>
             </div>
-            <Link className="button" href="/diagnostico">
-              Nuevo diagnóstico
-            </Link>
           </div>
 
           {loadError ? (
@@ -145,6 +186,9 @@ export default async function DashboardPage() {
                     </div>
                     <h3>{item.title}</h3>
                     <p>{item.degreeName}</p>
+                    <div className="case-mini-progress" aria-hidden="true">
+                      <span />
+                    </div>
                     <div className="case-status">
                       <span>Estado interno</span>
                       <strong>{statusLabels[item.status] || item.status}</strong>
