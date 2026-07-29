@@ -33,14 +33,14 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 ### Fase 1 — Infraestructura de desarrollo
 
 - [x] Ejecutar `what-if` antes de crear recursos.
-- [ ] Crear `rg-homologa-dev` en Chile Central dentro de Azure for Students.
-- [ ] Crear App Service Linux con Node.js.
-- [ ] Crear Storage Account con contenedores privados.
-- [ ] Crear Key Vault con RBAC.
-- [ ] Crear Application Insights y Log Analytics.
-- [ ] Habilitar identidad administrada en App Service.
-- [ ] Asignar permisos mínimos sobre Storage y Key Vault.
-- [ ] Confirmar que el entorno contiene únicamente datos ficticios hasta aprobar datos reales.
+- [x] Crear `rg-homologa-dev` en Chile Central dentro de Azure for Students.
+- [x] Crear App Service Linux con Node.js.
+- [x] Crear Storage Account con contenedores privados.
+- [x] Crear Key Vault con RBAC.
+- [x] Crear Application Insights y Log Analytics.
+- [x] Habilitar identidad administrada en App Service.
+- [x] Asignar permisos mínimos sobre Storage y Key Vault.
+- [x] Confirmar que el entorno contiene únicamente datos ficticios hasta aprobar datos reales.
 
 ### Fase 2 — Base de datos PostgreSQL
 
@@ -75,20 +75,21 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 ### Fase 5 — Despliegue continuo de desarrollo
 
-- [ ] Crear identidad de despliegue con OpenID Connect.
+- [x] Crear identidad de despliegue con OpenID Connect.
 - [x] Configurar GitHub Environment `development` para simulaciones.
 - [x] Documentar configuración OIDC de GitHub Actions para Azure Students.
 - [x] Crear workflow manual de infraestructura con `what-if`.
 - [x] Configurar `development-deployment` con rama `main` y aprobación manual.
 - [x] Preparar workflow manual OIDC para Azure App Service con artefacto verificable y health check.
-- [ ] Ejecutar el primer despliegue aprobado de la aplicación.
+- [x] Ejecutar el primer despliegue aprobado de la aplicación.
 - [x] Preparar workflow diario de retención con OIDC, Key Vault y resumen operativo.
 - [x] Preparar prueba manual de recuperación de un blob ficticio.
 - [x] Configurar `development-operations` restringido a la rama `main`.
-- [ ] Ejecutar y supervisar retención y recuperación en el entorno Azure desplegado.
+- [ ] Ejecutar y supervisar la retención en el entorno Azure desplegado.
+- [x] Ejecutar y supervisar la recuperación de un blob ficticio en Azure.
 - [x] Preparar alertas opt-in por fallo o ausencia de ejecución de retención.
 - [ ] Activar y probar las alertas después de la primera ejecución correcta.
-- [ ] Verificar que GitHub no almacene secretos permanentes de Azure.
+- [x] Verificar que GitHub no almacene secretos permanentes de Azure.
 
 ### Fase 6 — Validación funcional y seguridad
 
@@ -98,7 +99,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Aislamiento entre dos usuarios ficticios.
 - [x] Pruebas de acceso denegado a blobs ajenos.
 - [ ] Revisión de registros para descartar datos sensibles.
-- [ ] Ejecutar la prueba de recuperación documental en Azure con datos ficticios.
+- [x] Ejecutar la prueba de recuperación documental en Azure con datos ficticios.
 - [ ] Restauración de base de datos en un entorno de prueba.
 
 ### Fase 7 — Producción comercial

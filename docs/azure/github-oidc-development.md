@@ -34,9 +34,11 @@ El `what-if` con PostgreSQL genera una contraseña efímera dentro del runner, l
 
 ```text
 Issuer: https://token.actions.githubusercontent.com
-Subject: repo:Candido25/Homologa-tu-mismo:environment:development
+Subject: repo:Candido25@115950054/Homologa-tu-mismo@1315110497:environment:development
 Audience: api://AzureADTokenExchange
 ```
+
+Este repositorio personalizó el claim para incluir los IDs inmutables del propietario y del repositorio. Los Environments `development-deployment` y `development-operations` deben conservar el mismo prefijo y cambiar únicamente el nombre final del Environment.
 
 3. Asignar permisos mínimos sobre la suscripción Azure for Students.
 

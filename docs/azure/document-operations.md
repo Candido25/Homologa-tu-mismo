@@ -4,7 +4,7 @@
 
 Ejecutar la retención documental de forma programada y comprobar la recuperación ante borrados accidentales sin guardar el token operativo en GitHub ni utilizar documentos reales.
 
-Esta automatización queda preparada en el repositorio, pero no se considera activa hasta desplegar la aplicación, configurar OIDC y completar una ejecución satisfactoria en Azure.
+La recuperación de Blob Storage está activa y fue validada con un archivo ficticio. La retención programada permanece preparada pero desactivada hasta desplegar PostgreSQL y crear el token operativo.
 
 ## Componentes
 
@@ -17,7 +17,7 @@ Esta automatización queda preparada en el repositorio, pero no se considera act
 
 ## Entorno de GitHub
 
-El Environment independiente `development-operations` ya existe y acepta únicamente `main`. No comparte credenciales con producción y todavía requiere la configuración OIDC indicada a continuación.
+El Environment independiente `development-operations` acepta únicamente `main`, está configurado con OIDC y no comparte credenciales con producción.
 
 Configurar estos secretos:
 
@@ -36,12 +36,14 @@ Configurar estas variables:
 La credencial federada de Entra debe confiar en:
 
 ```text
-repo:<propietario>/<repositorio>:environment:development-operations
+repo:Candido25@115950054/Homologa-tu-mismo@1315110497:environment:development-operations
 ```
+
+El subject usa los IDs inmutables del propietario y del repositorio que GitHub incluye en este proyecto.
 
 ## Permisos mínimos
 
-Al desplegar Bicep se proporcionan fuera del repositorio:
+Al activar la retención se proporcionarán fuera del repositorio:
 
 - `documentRetentionJobToken`: valor aleatorio de 32 bytes o más.
 - `documentOperationsPrincipalId`: Object ID del service principal federado, no su Client ID.
@@ -50,6 +52,8 @@ La plantilla limita esa identidad a:
 
 - `Storage Blob Data Contributor` sobre la cuenta de desarrollo, necesario para la prueba de recuperación;
 - `Key Vault Secrets User` sobre `document-retention-job-token`, no sobre todo el Key Vault.
+
+En el despliegue actual solo se materializó `Storage Blob Data Contributor`, porque el token y su secreto continúan ausentes.
 
 La identidad administrada del App Service conserva sus propios permisos sobre Storage y Key Vault. En producción deben utilizarse una identidad, un Environment y aprobaciones independientes.
 
@@ -118,3 +122,10 @@ La fase se considera operativa solo cuando existan:
 - evidencia en Application Insights sin datos sensibles;
 - alerta operativa probada;
 - revisión del coste y del crédito de Azure for Students.
+
+Evidencia actual:
+
+- recuperación manual `30465696093`: aprobada;
+- autenticación OIDC de operaciones: aprobada;
+- carga, eliminación, `undelete` e integridad SHA-256: aprobadas;
+- retención, secreto y alertas: pendientes.

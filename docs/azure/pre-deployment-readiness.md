@@ -1,22 +1,31 @@
-# Preparación para el primer despliegue Azure
+# Primer despliegue Azure de desarrollo
 
 ## Estado al 29 de julio de 2026
 
-La plataforma está preparada para un primer despliegue técnico con datos ficticios, pero no se han creado recursos Azure.
+La plataforma técnica de desarrollo está desplegada en Azure for Students con datos ficticios y sin PostgreSQL.
 
 Evidencia comprobada:
 
 - suscripción `Azure for Students` habilitada;
-- ningún Resource Group existente;
+- Resource Group `rg-homologa-dev` creado en Chile Central;
 - gasto mensual reportado: `USD 0.00`;
 - presupuesto mensual: `USD 8.00`;
 - alertas de presupuesto al 50, 75, 90 y 100 por ciento;
 - usuario propietario con rol `Owner` sobre la suscripción;
 - Bicep y parámetros compilados localmente y en GitHub Actions;
-- build standalone ejecutado y validado mediante `/` y `/api/health`;
+- App Service Linux `app-homologa-dev-mv6rxx` sobre plan `F1`;
+- Storage privado `sthomologadevmv6rxx`;
+- Key Vault `kv-homologa-dev-mv6rxx`;
+- Application Insights y Log Analytics;
+- build standalone desplegado y validado mediante `/` y `/api/health`;
 - CI de aplicación, PostgreSQL portable y Azurite aprobados;
-- Environments de GitHub separados por simulación, despliegue y operaciones;
-- despliegue restringido a `main` y revisión manual.
+- identidades OIDC separadas para simulación, despliegue y operaciones;
+- despliegue restringido a `main` y revisión manual;
+- workflow de despliegue `30465077676`, intento 2, aprobado;
+- workflow de recuperación documental `30465696093`, aprobado;
+- PostgreSQL, token de retención y alertas documentales ausentes.
+
+La consulta inmediata a Cost Management recibió `429 Too Many Requests`. El plan F1 y la ausencia de PostgreSQL reducen el consumo esperado, pero el coste real debe revisarse otra vez cuando Azure complete su ingestión.
 
 ## Simulación sin PostgreSQL
 
@@ -85,9 +94,9 @@ Añade:
 
 PostgreSQL no se recomienda en el primer despliegue porque es el componente con mayor consumo esperado del crédito estudiantil.
 
-## Alcance recomendado para la primera aprobación
+## Alcance desplegado
 
-Crear únicamente la plataforma sin PostgreSQL, alertas documentales ni token de retención:
+Se creó únicamente la plataforma sin PostgreSQL, alertas documentales ni token de retención:
 
 ```text
 appServiceSku=F1
@@ -96,7 +105,7 @@ enableDocumentRetentionAlerts=false
 documentRetentionJobToken=<vacío>
 ```
 
-Este alcance permite validar:
+Este alcance permitió validar:
 
 - creación y nombres reales;
 - identidad administrada;
@@ -106,7 +115,7 @@ Este alcance permite validar:
 - observabilidad;
 - despliegue standalone y health check.
 
-El panel privado y las operaciones documentales Azure seguirán deshabilitados hasta configurar PostgreSQL, Entra, identidades OIDC y secretos.
+El panel privado seguirá sin persistencia Azure hasta configurar PostgreSQL y Entra External ID. La recuperación de Blob Storage está validada; la retención programada continúa desactivada hasta crear la base y el token operativo.
 
 La simulación local adicional con tu cuenta `Owner` y `assignManagedIdentityRoles=true` terminó correctamente:
 
@@ -116,18 +125,18 @@ Potential changes: 2 to create
 Status: Succeeded
 ```
 
-Los dos recursos adicionales son las asignaciones `Storage Blob Data Contributor` y `Key Vault Secrets User` para la identidad administrada del App Service. Los cambios potenciales están condicionados al token y a la identidad de operaciones, que permanecen vacíos en este primer alcance.
+Los dos recursos adicionales son las asignaciones `Storage Blob Data Contributor` y `Key Vault Secrets User` para la identidad administrada del App Service.
 
-## Acciones que requieren aprobación
+El `what-if` final con las identidades OIDC reales terminó en `Succeeded` y mostró 14 creaciones. Los dos cambios potenciales estaban condicionados al token de retención vacío y no se materializaron.
+
+## Acciones pendientes
 
 - confirmar saldo disponible y fecha de renovación de Azure for Students;
-- aceptar la creación de los 12 recursos simulados, incluidas dos asignaciones RBAC;
-- crear identidades federadas separadas para despliegue y operaciones;
-- retirar `POSTGRES_ADMIN_PASSWORD` del Environment `development`;
-- ejecutar `az deployment sub create`;
-- desplegar por primera vez la aplicación;
-- revisar Cost Management inmediatamente después.
+- resolver la discrepancia de Azure Sponsorships;
+- revisar Cost Management cuando el gasto reciente esté disponible;
+- configurar PostgreSQL y Entra External ID antes de habilitar páginas privadas;
+- crear el token de retención y probar alertas solo después de una ejecución manual correcta.
 
 ## Criterio de detención
 
-Si el despliegue difiere del último `what-if`, intenta crear PostgreSQL, habilita alertas o solicita un SKU distinto de F1, se debe cancelar y revisar la plantilla antes de continuar.
+Toda ampliación que intente crear PostgreSQL, habilitar alertas o cambiar el SKU F1 requiere un nuevo `what-if`, revisión de costes y aprobación explícita.

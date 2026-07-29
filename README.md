@@ -153,15 +153,13 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 
 ## Próximas fases
 
-1. Validar Bicep con PostgreSQL opcional.
-2. Ejecutar `what-if` en Azure for Students antes de crear recursos.
-3. Desplegar App Service, Storage, Key Vault, observabilidad y PostgreSQL mínimo cuando el crédito esté confirmado.
-4. Aplicar migraciones portables en Azure PostgreSQL.
-5. Configurar Microsoft Entra External ID.
-6. Sustituir Supabase por adaptadores Azure.
-7. Aprobar y ejecutar el primer despliegue de App Service con el workflow ya preparado.
-8. Ejecutar en Azure los workflows ya preparados de retención y recuperación documental.
-9. Activar y probar las alertas por fallo o ausencia de la ejecución programada.
+1. Confirmar saldo y renovación de Azure for Students y revisar el coste ingerido.
+2. Configurar Microsoft Entra External ID.
+3. Aprobar PostgreSQL `B_Standard_B1ms` y aplicar las migraciones portables.
+4. Conectar las páginas privadas a los adaptadores Azure ya preparados.
+5. Ejecutar la retención documental con datos ficticios.
+6. Activar y probar las alertas por fallo o ausencia de retención.
+7. Probar rollback y continuidad antes de incorporar datos reales.
 
 ## Propiedad
 

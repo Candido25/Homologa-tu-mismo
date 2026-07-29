@@ -2,7 +2,7 @@
 
 ## Estado
 
-El workflow de despliegue está preparado, pero no debe ejecutarse hasta que la infraestructura de desarrollo exista, el crédito esté confirmado y el Environment `development-deployment` tenga aprobación manual.
+El workflow de despliegue está operativo. El primer despliegue técnico terminó correctamente el 29 de julio de 2026 en el run `30465077676`, intento 2.
 
 El flujo usa OpenID Connect. No utiliza publish profiles, contraseñas de service principal ni credenciales permanentes de Azure.
 
@@ -13,10 +13,10 @@ La identidad federada de despliegue debe ser distinta de la identidad usada para
 Su credencial federada confía en:
 
 ```text
-repo:<propietario>/<repositorio>:environment:development-deployment
+repo:Candido25@115950054/Homologa-tu-mismo@1315110497:environment:development-deployment
 ```
 
-El Environment `development-deployment` ya existe, acepta únicamente `main` y exige revisión de `Candido25`. Todavía requiere:
+El subject incluye IDs inmutables porque este repositorio personalizó sus claims OIDC. El Environment `development-deployment` acepta únicamente `main`, exige revisión de `Candido25` y contiene:
 
 ### Secretos
 
@@ -84,13 +84,13 @@ El plan F1 no ofrece `Always On`. La primera petición puede tardar más despué
 
 ## Aprobación
 
-Antes del primer despliegue:
+Antes de cada despliegue:
 
 - revisar el último `what-if`;
-- confirmar que los recursos existen y pertenecen a Azure for Students;
+- confirmar que los recursos pertenecen a Azure for Students;
 - revisar presupuesto, alertas y crédito disponible;
 - activar required reviewers en el Environment `development-deployment`;
-- comprobar que PostgreSQL y Entra están configurados para las páginas privadas;
+- no interpretar el despliegue técnico como habilitación de las páginas privadas mientras PostgreSQL y Entra no estén configurados;
 - mantener únicamente usuarios y documentos ficticios.
 
 ## Rollback
@@ -115,3 +115,11 @@ El despliegue se considera aprobado cuando:
 - Application Insights recibe solicitudes sin datos sensibles;
 - el panel usa únicamente identidades y datos ficticios;
 - existe un procedimiento de rollback probado.
+
+Evidencia del primer despliegue:
+
+- SHA desplegado: `90eba2bcec3bacb7fb0499e37436cf38d099921e`;
+- aplicación: `https://app-homologa-dev-mv6rxx.azurewebsites.net`;
+- interfaz pública: HTTP 200;
+- `/api/health`: `status=ok`, `service=homologa-tu-mismo`;
+- OIDC y rol `Website Contributor` limitados al App Service.
