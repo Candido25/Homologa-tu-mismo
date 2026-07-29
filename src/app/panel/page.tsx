@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
-import { isSupabaseConfigured } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import type { CaseSummary } from "@/core/cases/case-repository";
+import {
+  getCaseRepository,
+  getCurrentUserProvider,
+  isPrivateAreaConfigured,
+} from "@/lib/application-services";
 
 export const metadata: Metadata = {
   title: "Mi panel",
@@ -42,15 +46,15 @@ function formatDate(value: string) {
 }
 
 export default async function DashboardPage() {
-  if (!isSupabaseConfigured()) {
+  if (!isPrivateAreaConfigured()) {
     return (
       <section className="section">
         <div className="container empty-state">
           <span className="result-label">Configuración pendiente</span>
           <h1>El panel ya está construido</h1>
           <p>
-            Falta registrar las variables del proyecto Supabase en Render y aplicar las migraciones. No se ha
-            habilitado ninguna carga de documentos reales.
+            Falta iniciar el entorno local portable o configurar los proveedores del entorno. La carga de
+            documentos reales continúa desactivada.
           </p>
           <Link className="button" href="/">
             Volver al inicio
@@ -60,25 +64,22 @@ export default async function DashboardPage() {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUserProvider().getCurrentUser();
+  if (!user) redirect("/iniciar-sesion?siguiente=/panel");
 
-  if (!user) {
-    redirect("/iniciar-sesion?siguiente=/panel");
+  let cases: CaseSummary[] = [];
+  let loadError = false;
+
+  try {
+    cases = await getCaseRepository().listRecentByUser(user.id, 6);
+  } catch (error) {
+    loadError = true;
+    console.error("case_list_failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
   }
 
-  const { data: cases, error } = await supabase
-    .from("cases")
-    .select("id,title,degree_name,procedure_type,status,updated_at")
-    .order("updated_at", { ascending: false })
-    .limit(6);
-
-  const displayName =
-    typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
-      ? user.user_metadata.full_name
-      : user.email?.split("@")[0] || "usuario";
+  const displayName = user.displayName || user.email?.split("@")[0] || "usuario";
 
   return (
     <>
@@ -102,7 +103,7 @@ export default async function DashboardPage() {
           <div className="dashboard-summary">
             <article className="metric-card">
               <span>Expedientes</span>
-              <strong>{cases?.length || 0}</strong>
+              <strong>{cases.length}</strong>
               <small>hasta 6 recientes</small>
             </article>
             <article className="metric-card">
@@ -112,8 +113,8 @@ export default async function DashboardPage() {
             </article>
             <article className="metric-card">
               <span>Próximo paso</span>
-              <strong>{cases?.length ? "Abrir expediente" : "Diagnóstico"}</strong>
-              <small>{cases?.length ? "continúa tu ruta" : "define primero tu ruta"}</small>
+              <strong>{cases.length ? "Abrir expediente" : "Diagnóstico"}</strong>
+              <small>{cases.length ? "continúa tu ruta" : "define primero tu ruta"}</small>
             </article>
           </div>
 
@@ -127,23 +128,23 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {error ? (
+          {loadError ? (
             <div className="notice notice-error" role="alert">
-              No pudimos cargar tus expedientes. Comprueba que las migraciones de Supabase estén aplicadas.
+              No pudimos cargar tus expedientes. Comprueba que PostgreSQL esté iniciado y tenga las migraciones.
             </div>
-          ) : cases && cases.length > 0 ? (
+          ) : cases.length > 0 ? (
             <div className="case-grid">
               {cases.map((item) => (
                 <Link className="case-card-link" href={`/panel/expedientes/${item.id}`} key={item.id}>
                   <article className="case-card">
                     <div className="case-card-topline">
                       <span className="result-label">
-                        {procedureLabels[item.procedure_type] || item.procedure_type}
+                        {procedureLabels[item.procedureType] || item.procedureType}
                       </span>
-                      <small>{formatDate(item.updated_at)}</small>
+                      <small>{formatDate(item.updatedAt)}</small>
                     </div>
                     <h3>{item.title}</h3>
-                    <p>{item.degree_name}</p>
+                    <p>{item.degreeName}</p>
                     <div className="case-status">
                       <span>Estado interno</span>
                       <strong>{statusLabels[item.status] || item.status}</strong>
