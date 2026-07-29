@@ -2,9 +2,26 @@
 
 Esta carpeta define la plataforma de Homologa Tú Mismo mediante Bicep.
 
-## Alcance actual
+## Estado: congelamiento de despliegue
 
-El despliegue de desarrollo crea:
+La infraestructura puede compilarse, validarse y revisarse con `what-if`, pero **no debe desplegarse todavía**.
+
+Queda prohibido ejecutar comandos `az deployment ... create` hasta completar:
+
+- entorno local reproducible;
+- adaptadores portables;
+- pruebas de aislamiento;
+- PostgreSQL y respaldo en el diseño;
+- estimación mensual por servicio;
+- revisión de RBAC y redes;
+- workflow con aprobación manual;
+- autorización expresa del propietario.
+
+El `what-if` aprobado no constituye autorización de gasto.
+
+## Alcance actual de la plantilla
+
+La vista previa de desarrollo contiene:
 
 - Grupo de recursos `rg-homologa-dev`.
 - App Service Linux con Node.js 22.
@@ -16,26 +33,26 @@ El despliegue de desarrollo crea:
 - Identidad administrada para App Service.
 - Permisos mínimos de la aplicación sobre Blob Storage y Key Vault.
 
-La base de datos PostgreSQL y Microsoft Entra External ID se incorporarán en fases separadas después de revisar costos y adaptar el esquema.
+PostgreSQL y Microsoft Entra External ID todavía no forman parte de la plantilla. Se añadirán después de aprobar arquitectura, SKU y costo.
 
 ## Región de desarrollo
 
-La directiva `Allowed resource deployment regions` de Azure for Students permite `chilecentral`, `mexicocentral`, `centralus`, `southcentralus` y `eastus`. La simulación completa `what-if` rechazó `eastus` por disponibilidad regional y validó correctamente **Chile Central** con 12 recursos previstos.
+La directiva `Allowed resource deployment regions` de Azure for Students permite `chilecentral`, `mexicocentral`, `centralus`, `southcentralus` y `eastus`.
 
-Por ello, el entorno de desarrollo usa temporalmente `chilecentral` y solamente datos ficticios. Ningún cliente, pago ni documento real se alojará en la suscripción estudiantil.
+La simulación completa rechazó `eastus` por disponibilidad regional y validó **Chile Central** con 12 recursos previstos. El entorno estudiantil solo podrá contener datos ficticios.
 
-Producción tendrá parámetros y suscripción independientes. Su región se elegirá según residencia de datos, cumplimiento, latencia, disponibilidad y costo.
+Producción tendrá parámetros, suscripción y región independientes.
 
-## Validación local o en Cloud Shell
+## Compilación
 
 ```bash
 az bicep build --file infra/azure/main.bicep
 az bicep build-params --file infra/azure/parameters/dev.bicepparam
 ```
 
-Estos comandos compilan el código, pero no crean recursos.
+Estos comandos no crean recursos.
 
-## Vista previa antes de desplegar
+## Vista previa
 
 ```bash
 az deployment sub what-if \
@@ -44,20 +61,23 @@ az deployment sub what-if \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
 
-La última simulación aprobada mostró `Resource changes: 12 to create`.
+La última simulación aprobada mostró:
 
-## Despliegue
-
-No ejecutar hasta haber creado un presupuesto, revisado la salida de `what-if` y obtenido autorización expresa del propietario.
-
-```bash
-az deployment sub create \
-  --name homologa-dev-foundation \
-  --location chilecentral \
-  --template-file infra/azure/main.bicep \
-  --parameters infra/azure/parameters/dev.bicepparam
+```text
+Resource changes: 12 to create
 ```
+
+No se conserva en esta guía ningún comando de creación para reducir el riesgo de despliegue accidental.
 
 ## Producción
 
-Producción tendrá un archivo de parámetros independiente, una suscripción comercial y un grupo de recursos separado. No se desplegará sobre F1 y requerirá aprobación manual, presupuesto, dominio, pruebas de aceptación y controles de continuidad.
+Producción requerirá:
+
+- suscripción comercial;
+- archivo de parámetros independiente;
+- región aprobada por residencia de datos y latencia;
+- plan distinto de F1;
+- presupuesto y alertas propios;
+- dominio y certificados;
+- pruebas de aceptación, recuperación y continuidad;
+- aprobación manual antes de cada despliegue de infraestructura.
