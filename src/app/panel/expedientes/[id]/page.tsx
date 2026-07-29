@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { isSupabaseConfigured } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getCaseRepository,
+  getCurrentUserProvider,
+  isPrivateAreaConfigured,
+} from "@/lib/application-services";
 
 export const metadata: Metadata = { title: "Mi expediente" };
 export const dynamic = "force-dynamic";
@@ -50,27 +53,26 @@ function formatDate(value: string) {
 }
 
 export default async function CasePage({ params }: PageProps) {
-  if (!isSupabaseConfigured()) redirect("/panel");
+  if (!isPrivateAreaConfigured()) redirect("/panel");
 
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUserProvider().getCurrentUser();
 
   if (!user) redirect(`/iniciar-sesion?siguiente=${encodeURIComponent(`/panel/expedientes/${id}`)}`);
 
-  const { data: caseItem, error } = await supabase
-    .from("cases")
-    .select(
-      "id,title,degree_name,objective,procedure_type,status,diagnostic_payload,created_at,updated_at,origin_country_code",
-    )
-    .eq("id", id)
-    .single();
+  let caseItem;
+  try {
+    caseItem = await getCaseRepository().getByIdForUser(id, user.id);
+  } catch (error) {
+    console.error("case_read_failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    notFound();
+  }
 
-  if (error || !caseItem) notFound();
+  if (!caseItem) notFound();
 
-  const payload = readPayload(caseItem.diagnostic_payload);
+  const payload = readPayload(caseItem.diagnosticPayload);
   const result = payload.result;
 
   return (
@@ -79,7 +81,7 @@ export default async function CasePage({ params }: PageProps) {
         <div className="container case-detail-header">
           <div>
             <p className="eyebrow">Expediente privado</p>
-            <h1>{caseItem.degree_name}</h1>
+            <h1>{caseItem.degreeName}</h1>
             <p>{result?.route || caseItem.title}</p>
           </div>
           <Link className="button button-secondary" href="/panel">
@@ -94,7 +96,7 @@ export default async function CasePage({ params }: PageProps) {
             <article className="detail-card">
               <div className="case-card-topline">
                 <span className="result-label">Orientación preliminar</span>
-                <small>Creado el {formatDate(caseItem.created_at)}</small>
+                <small>Creado el {formatDate(caseItem.createdAt)}</small>
               </div>
               <h2>{result?.route || "Ruta por determinar"}</h2>
               <p>{result?.explanation || "Este expediente todavía necesita completar su diagnóstico."}</p>
@@ -128,7 +130,7 @@ export default async function CasePage({ params }: PageProps) {
                 </div>
                 <div>
                   <dt>País de origen</dt>
-                  <dd>{payload.input?.countryName || caseItem.origin_country_code || "No indicado"}</dd>
+                  <dd>{payload.input?.countryName || caseItem.originCountryCode || "No indicado"}</dd>
                 </div>
                 <div>
                   <dt>Objetivo</dt>
@@ -136,7 +138,7 @@ export default async function CasePage({ params }: PageProps) {
                 </div>
                 <div>
                   <dt>Última actualización</dt>
-                  <dd>{formatDate(caseItem.updated_at)}</dd>
+                  <dd>{formatDate(caseItem.updatedAt)}</dd>
                 </div>
               </dl>
             </article>
@@ -144,7 +146,7 @@ export default async function CasePage({ params }: PageProps) {
             <article className="detail-card locked-feature">
               <span className="result-label">Próxima fase</span>
               <h2>Checklist documental</h2>
-              <p>Se habilitará después de validar autenticación, RLS y privacidad con usuarios de prueba.</p>
+              <p>Se habilitará después de validar identidad, aislamiento y privacidad con usuarios ficticios.</p>
             </article>
           </aside>
         </div>
