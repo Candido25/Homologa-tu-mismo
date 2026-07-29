@@ -47,6 +47,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Elegir SKU inicial mínimo de desarrollo: `B_Standard_B1ms`, 32 GiB, Burstable.
 - [x] Validar mediante `what-if` el escenario opcional con PostgreSQL mínimo.
 - [x] Preparar workflow OIDC con firewall temporal para aplicar migraciones.
+- [x] Crear identidad OIDC y environment protegido `development-database`.
 - [x] Validar localmente `0001_portable_core` y `0002_auth_sessions`.
 - [ ] Crear Azure Database for PostgreSQL Flexible Server de desarrollo mediante Bicep opcional.
 - [x] Adaptar el esquema para eliminar dependencias de `auth.users`, `auth.uid()` y `storage.*`.

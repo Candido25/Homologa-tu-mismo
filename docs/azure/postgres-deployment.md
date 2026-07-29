@@ -4,6 +4,17 @@
 
 La plantilla, las migraciones portables y el workflow OIDC están preparados, pero el servidor no está creado.
 
+La identidad de migración ya está configurada:
+
+```text
+Aplicación: github-homologa-dev-database-migration
+Client ID: 0d880356-db6d-4a35-b731-07f269bd10fe
+Service principal Object ID: fb2026ee-63d1-443d-880d-2d62b547c7f9
+GitHub Environment: development-database
+```
+
+El environment exige revisión manual, acepta únicamente `main` y contiene solo los identificadores OIDC y nombres de recursos previstos. No contiene una contraseña de PostgreSQL.
+
 El `what-if` incremental aprobado prevé exactamente cuatro recursos:
 
 1. PostgreSQL Flexible Server `psql-homologa-dev-mv6rxx`.
@@ -54,11 +65,13 @@ El workflow `.github/workflows/azure-postgres-migrate.yml` usa una identidad sep
 2. Agregar una credencial federada para:
 
 ```text
-repo:Candido25/Homologa-tu-mismo:environment:development-database
+repo:Candido25@115950054/Homologa-tu-mismo@1315110497:environment:development-database
 ```
 
-3. Pasar su Object ID como `databaseMigrationPrincipalId` en Bicep.
-4. Crear el GitHub Environment `development-database`, restringido a `main` y con aprobación manual.
+Este sujeto usa los identificadores inmutables del propietario y del repositorio para evitar que un cambio de nombre pueda transferir la confianza.
+
+3. Pasar su Object ID como `databaseMigrationPrincipalId` en Bicep. Ya está configurado en `dev.bicepparam`.
+4. Crear el GitHub Environment `development-database`, restringido a `main` y con aprobación manual. Ya está configurado.
 5. Configurar estos secretos:
 
 ```text
