@@ -199,6 +199,21 @@ try {
   assert.ok(deletedMetadata.rows[0].deleted_at);
   assert.equal(await blob.exists(), false);
 
+  const deletionAudit = await database.query(
+    [
+      "select actor_user_id, action, result, metadata",
+      "from audit_events",
+      "where entity_type = 'document' and entity_id = $1",
+      "order by created_at desc",
+      "limit 1",
+    ].join(" "),
+    [documentId],
+  );
+  assert.equal(deletionAudit.rows[0].actor_user_id, fixtures.userA);
+  assert.equal(deletionAudit.rows[0].action, "document.deleted");
+  assert.equal(deletionAudit.rows[0].result, "success");
+  assert.equal(deletionAudit.rows[0].metadata?.source, "user");
+
   const readAfterDelete = await json(
     `/api/expedientes/${fixtures.caseA}/documentos/${documentId}`,
   );
@@ -230,6 +245,10 @@ try {
     }
 
     if (connected) {
+      await database.query(
+        "delete from audit_events where entity_type = 'document' and entity_id = $1",
+        [documentId],
+      );
       await database.query("delete from documents where id = $1", [documentId]);
       await database.query(
         [

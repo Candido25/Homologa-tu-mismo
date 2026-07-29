@@ -84,6 +84,8 @@ Antes del lanzamiento se definirán plazos por tipo de dato. Como principio:
 
 El usuario deberá poder solicitar la eliminación de su cuenta y expediente. El sistema registrará la ejecución de la eliminación sin conservar el contenido eliminado.
 
+La implementación portable asigna vencimiento al cargar, elimina blobs vencidos mediante un proceso interno autenticado y registra únicamente identificadores técnicos y la fuente `retention`. Este comportamiento se prueba con archivos ficticios en local y CI; la programación y supervisión del proceso debe configurarse por separado en cada entorno administrado.
+
 ## Evaluación de impacto
 
 Antes de habilitar análisis documental para usuarios reales se debe realizar una evaluación de impacto en protección de datos que cubra, como mínimo:
@@ -111,6 +113,6 @@ Antes de habilitar análisis documental para usuarios reales se debe realizar un
 - [ ] Política de privacidad y términos publicados.
 - [ ] Contratos/DPA revisados.
 - [ ] Plan de respuesta a incidentes.
-- [ ] Eliminación y retención probadas.
+- [x] Eliminación y retención probadas con archivos ficticios en local y CI.
 - [ ] IA desactivable mediante configuración.
 - [ ] Evaluación de impacto completada antes de análisis documental real.

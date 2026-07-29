@@ -2,6 +2,7 @@ import "server-only";
 
 import type {
   CreateDocumentRecordInput,
+  DocumentDeletionSource,
   DocumentRecord,
   DocumentRepository,
   DocumentStatus,
@@ -132,6 +133,23 @@ export class PostgresDocumentRepository implements DocumentRepository {
     return result.rows.map(mapSummary);
   }
 
+  async listExpiredForDeletion(limit: number): Promise<DocumentRecord[]> {
+    const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+    const result = await query<DocumentRow>(
+      [
+        documentSelect,
+        "where d.retention_until is not null",
+        "and d.retention_until <= now()",
+        "and d.status <> 'deleted'",
+        "order by d.retention_until, d.id",
+        "limit $1",
+      ].join(" "),
+      [safeLimit],
+    );
+
+    return result.rows.map(mapRecord);
+  }
+
   async getByIdForUser(
     documentId: string,
     caseId: string,
@@ -217,7 +235,12 @@ export class PostgresDocumentRepository implements DocumentRepository {
     });
   }
 
-  async markDeleted(documentId: string, caseId: string, userId: string): Promise<boolean> {
+  async markDeleted(
+    documentId: string,
+    caseId: string,
+    userId: string,
+    source: DocumentDeletionSource,
+  ): Promise<boolean> {
     return withTransaction(async (client) => {
       const result = await client.query<{ document_type_code: string }>(
         [
@@ -245,6 +268,16 @@ export class PostgresDocumentRepository implements DocumentRepository {
           "where r.case_id = $1 and r.document_type_code = $2",
         ].join(" "),
         [caseId, documentTypeCode],
+      );
+
+      await client.query(
+        [
+          "insert into audit_events (",
+          "actor_user_id, case_id, action, entity_type, entity_id, result, metadata",
+          ") values ($1, $2, 'document.deleted', 'document', $3, 'success',",
+          "jsonb_build_object('source', $4::text))",
+        ].join(" "),
+        [source === "user" ? userId : null, caseId, documentId, source],
       );
 
       return true;

@@ -11,6 +11,7 @@ import type { CaseRepository } from "@/core/cases/case-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
 import type { DocumentRepository } from "@/core/documents/document-repository";
 import type { DocumentStorage } from "@/core/storage/document-storage";
+import { DocumentRetentionService } from "@/modules/documents/document-retention-service";
 import { DocumentService } from "@/modules/documents/document-service";
 import {
   getAuthProviderName,
@@ -80,6 +81,10 @@ export function getDocumentService() {
   );
 }
 
+export function getDocumentRetentionService() {
+  return new DocumentRetentionService(getDocumentRepository(), getDocumentStorage());
+}
+
 export function isPrivateAreaConfigured() {
   const authProvider = getAuthProviderName();
   const authConfigured = authProvider === "local-test" ? isLocalTestAuthEnabled() : isSupabaseConfigured();
@@ -87,7 +92,11 @@ export function isPrivateAreaConfigured() {
 }
 
 export function isDocumentFlowConfigured() {
-  if (!isPrivateAreaConfigured() || getDatabaseProviderName() !== "postgres") return false;
+  return isPrivateAreaConfigured() && isDocumentDataConfigured();
+}
+
+export function isDocumentDataConfigured() {
+  if (getDatabaseProviderName() !== "postgres" || !isApplicationDataConfigured()) return false;
 
   const storageProvider = getStorageProviderName();
   if (storageProvider === "azurite") return isAzuriteConfigured();

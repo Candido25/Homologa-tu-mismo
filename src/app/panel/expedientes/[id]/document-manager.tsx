@@ -254,6 +254,11 @@ export function DocumentManager({
                   {document.documentTypeName} | Versión {document.version} |{" "}
                   {formatSize(document.sizeBytes)} | {formatDate(document.uploadedAt)}
                 </span>
+                <small className="document-retention-note">
+                  {document.retentionUntil
+                    ? `Se conserva hasta ${formatDate(document.retentionUntil)}`
+                    : "Sin vencimiento configurado"}
+                </small>
               </div>
               <div className="document-record-actions">
                 <a

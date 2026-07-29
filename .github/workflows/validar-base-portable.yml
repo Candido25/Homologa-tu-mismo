@@ -7,6 +7,7 @@ on:
       - "src/**"
       - "scripts/verify-local-document-flow.mjs"
       - "scripts/verify-local-isolation.mjs"
+      - "scripts/verify-local-retention.mjs"
       - "compose.yaml"
       - "next.config.ts"
       - "package.json"
@@ -19,6 +20,7 @@ on:
       - "src/**"
       - "scripts/verify-local-document-flow.mjs"
       - "scripts/verify-local-isolation.mjs"
+      - "scripts/verify-local-retention.mjs"
       - "compose.yaml"
       - "next.config.ts"
       - "package.json"
@@ -65,6 +67,7 @@ jobs:
       AZURE_STORAGE_GENERATED_REPORTS_CONTAINER: generated-reports
       DOCUMENT_RETENTION_DAYS: "30"
       DOCUMENT_UPLOAD_UI_ENABLED: "true"
+      DOCUMENT_RETENTION_JOB_TOKEN: local-retention-job-test-only
 
     steps:
       - name: Descargar código
@@ -135,6 +138,7 @@ jobs:
         run: |
           npm run storage:verify
           npm run documents:verify-local
+          npm run retention:verify-local
 
       - name: Verificar tipos
         run: npm run typecheck

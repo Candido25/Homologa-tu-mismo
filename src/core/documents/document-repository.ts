@@ -9,6 +9,8 @@ export type DocumentStatus =
   | "expired"
   | "deleted";
 
+export type DocumentDeletionSource = "user" | "retention";
+
 export type DocumentType = {
   code: string;
   name: string;
@@ -54,11 +56,17 @@ export interface DocumentRepository {
   getActiveDocumentType(code: string): Promise<DocumentType | null>;
   listActiveDocumentTypes(): Promise<DocumentType[]>;
   listByCaseForUser(caseId: string, userId: string): Promise<DocumentSummary[]>;
+  listExpiredForDeletion(limit: number): Promise<DocumentRecord[]>;
   getByIdForUser(
     documentId: string,
     caseId: string,
     userId: string,
   ): Promise<DocumentRecord | null>;
   create(input: CreateDocumentRecordInput): Promise<DocumentSummary>;
-  markDeleted(documentId: string, caseId: string, userId: string): Promise<boolean>;
+  markDeleted(
+    documentId: string,
+    caseId: string,
+    userId: string,
+    source: DocumentDeletionSource,
+  ): Promise<boolean>;
 }

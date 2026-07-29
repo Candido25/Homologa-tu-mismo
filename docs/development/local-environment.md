@@ -131,13 +131,31 @@ La prueba bloquea origen cruzado, expediente ajeno, MIME inválido o suplantado,
 
 La interfaz documental se habilita únicamente cuando `DOCUMENT_UPLOAD_UI_ENABLED=true`. Esta bandera se usa en el entorno local con identidad y archivos ficticios; debe permanecer desactivada en cualquier entorno que pueda recibir datos reales hasta completar la política de retención y la revisión previa al lanzamiento.
 
+### Retención documental
+
+Cada archivo recibe `retention_until` según `DOCUMENT_RETENTION_DAYS`. El proceso interno protegido elimina físicamente los blobs vencidos, marca sus metadatos como eliminados y registra `document.deleted` con fuente `retention`, sin guardar nombre ni contenido en auditoría.
+
+```bash
+npm run retention:verify-local
+```
+
+La prueba confirma credencial obligatoria, rechazo de token incorrecto, conservación del archivo vigente, eliminación del vencido, idempotencia y auditoría. `DOCUMENT_RETENTION_JOB_TOKEN` debe ser un secreto independiente en entornos administrados; el valor incluido en `.env.example` solo es válido con `APP_ENV=local`.
+
+El programador invoca:
+
+```text
+POST /api/internal/retencion-documental?limit=50
+Authorization: Bearer <DOCUMENT_RETENTION_JOB_TOKEN>
+```
+
 ## Seguridad de esta fase
 
 - No usar nombres, correos, títulos ni documentos reales.
 - No exponer PostgreSQL ni Azurite a Internet.
 - No publicar `.env.local`.
 - No almacenar claves de Azure.
-- No activar `DOCUMENT_UPLOAD_UI_ENABLED` fuera del entorno ficticio hasta aprobar retención y revisión previa al lanzamiento.
+- No activar `DOCUMENT_UPLOAD_UI_ENABLED` fuera del entorno ficticio hasta aprobar la revisión previa al lanzamiento.
+- No reutilizar el token local del proceso de retención en entornos administrados.
 - No ejecutar comandos `az deployment ... create`.
 
 ## Solución de problemas

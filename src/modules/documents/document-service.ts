@@ -123,6 +123,6 @@ export class DocumentService {
     if (!document) return false;
 
     await this.storage.delete(document.storage);
-    return this.documents.markDeleted(documentId, caseId, userId);
+    return this.documents.markDeleted(documentId, caseId, userId, "user");
   }
 }

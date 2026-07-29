@@ -23,6 +23,7 @@ La versión actual incluye:
 - Contratos independientes del proveedor para identidad, expedientes y documentos.
 - API documental privada para archivos ficticios, con metadatos PostgreSQL y contenido en Azurite.
 - Gestor documental local para cargar, versionar, descargar y eliminar archivos ficticios.
+- Retención automática portable con vencimiento, borrado físico y auditoría mínima.
 - Validación automatizada de propietario, origen, MIME y firma binaria, tamaño, hash, lectura y eliminación.
 
 ## Arquitectura objetivo
@@ -152,7 +153,7 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 4. Aplicar migraciones portables en Azure PostgreSQL.
 5. Configurar Microsoft Entra External ID.
 6. Sustituir Supabase por adaptadores Azure.
-7. Completar la política de retención y probar restauración; aislamiento, MIME, tamaño, hash y eliminación ya se validan localmente.
+7. Programar la retención en Azure y probar restauración; la política y eliminación de vencidos ya se validan localmente.
 8. Preparar GitHub OIDC y workflow con aprobación manual.
 
 ## Propiedad

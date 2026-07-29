@@ -19,6 +19,7 @@
     "db:verify": "docker compose exec -T postgres psql -U homologa -d homologa -c \"select version, applied_at from schema_migrations order by applied_at;\"",
     "app:verify-local": "node scripts/verify-local-web-flow.mjs",
     "documents:verify-local": "node scripts/verify-local-document-flow.mjs",
+    "retention:verify-local": "node scripts/verify-local-retention.mjs",
     "security:verify-local": "node scripts/verify-local-isolation.mjs",
     "storage:verify": "node scripts/verify-azurite.mjs"
   },

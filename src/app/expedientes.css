@@ -300,7 +300,8 @@
 }
 
 .document-record-copy strong,
-.document-record-copy span {
+.document-record-copy span,
+.document-record-copy small {
   display: block;
 }
 
@@ -314,6 +315,13 @@
   margin-top: 3px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.document-record-copy .document-retention-note {
+  margin-top: 3px;
+  color: var(--brand-dark);
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
 .document-record-actions {

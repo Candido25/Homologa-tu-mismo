@@ -69,7 +69,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Entregar descargas desde el servidor sin exponer URL pública.
 - [x] Aplicar límites de tamaño, tipo MIME, hash y borrado en el adaptador.
 - [x] Implementar gestor documental controlado para el entorno local ficticio.
-- [ ] Aplicar política de retención documental completa.
+- [x] Aplicar política portable de vencimiento, eliminación y auditoría documental.
 - [x] Probar únicamente con archivos ficticios durante desarrollo.
 
 ### Fase 5 — Despliegue continuo de desarrollo
@@ -80,6 +80,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Crear workflow manual de infraestructura con `what-if`.
 - [ ] Añadir aprobación manual al GitHub Environment `development`.
 - [ ] Crear workflow de aplicación para Azure App Service.
+- [ ] Programar y supervisar la ejecución de retención documental en Azure.
 - [ ] Verificar que GitHub no almacene secretos permanentes de Azure.
 
 ### Fase 6 — Validación funcional y seguridad

@@ -138,3 +138,25 @@ export function getDocumentRetentionDays() {
 export function isDocumentUploadUiEnabled() {
   return value("DOCUMENT_UPLOAD_UI_ENABLED").toLowerCase() === "true";
 }
+
+const localRetentionJobToken = "local-retention-job-test-only";
+
+export function getDocumentRetentionJobToken() {
+  const token = value("DOCUMENT_RETENTION_JOB_TOKEN");
+  if (token.length < 24) {
+    throw new Error("El token del proceso de retención no está configurado.");
+  }
+  if (process.env.APP_ENV !== "local" && token === localRetentionJobToken) {
+    throw new Error("El token local de retención no puede usarse fuera del entorno local.");
+  }
+  return token;
+}
+
+export function isDocumentRetentionJobConfigured() {
+  try {
+    getDocumentRetentionJobToken();
+    return true;
+  } catch {
+    return false;
+  }
+}
