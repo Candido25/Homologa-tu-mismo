@@ -18,6 +18,12 @@ El despliegue de desarrollo crea:
 
 La base de datos PostgreSQL y Microsoft Entra External ID se incorporarán en fases separadas después de revisar costos y adaptar el esquema.
 
+## Región de desarrollo
+
+La suscripción Azure for Students bloqueó las regiones europeas probadas y permitió `eastus`. Por ello, el entorno de desarrollo usa temporalmente **East US** y solamente datos ficticios. Ningún cliente, pago ni documento real se alojará allí.
+
+Producción tendrá parámetros y suscripción independientes. Su región se elegirá según residencia de datos, cumplimiento, latencia, disponibilidad y costo.
+
 ## Validación local o en Cloud Shell
 
 ```bash
@@ -31,7 +37,7 @@ Estos comandos compilan el código, pero no crean recursos.
 
 ```bash
 az deployment sub what-if \
-  --location westeurope \
+  --location eastus \
   --template-file infra/azure/main.bicep \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
@@ -43,11 +49,11 @@ No ejecutar hasta haber creado un presupuesto y revisado la salida de `what-if`.
 ```bash
 az deployment sub create \
   --name homologa-dev-foundation \
-  --location westeurope \
+  --location eastus \
   --template-file infra/azure/main.bicep \
   --parameters infra/azure/parameters/dev.bicepparam
 ```
 
 ## Producción
 
-Producción tendrá un archivo de parámetros independiente y un grupo de recursos separado. No se desplegará sobre F1 y requerirá aprobación manual, presupuesto, dominio y plan de continuidad posterior a Azure for Students.
+Producción tendrá un archivo de parámetros independiente, una suscripción comercial y un grupo de recursos separado. No se desplegará sobre F1 y requerirá aprobación manual, presupuesto, dominio, pruebas de aceptación y controles de continuidad.
