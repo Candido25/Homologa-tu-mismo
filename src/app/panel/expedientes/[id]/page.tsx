@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type {
+  DocumentSummary,
+  DocumentType,
+} from "@/core/documents/document-repository";
 import {
   getCaseRepository,
   getCurrentUserProvider,
+  getDocumentService,
+  isDocumentInterfaceEnabled,
   isPrivateAreaConfigured,
 } from "@/lib/application-services";
+import { DocumentManager } from "./document-manager";
 
 export const metadata: Metadata = { title: "Mi expediente" };
 export const dynamic = "force-dynamic";
@@ -39,13 +46,6 @@ const statusLabels: Record<string, string> = {
   resolved_unfavorable: "Resolución desfavorable",
   closed: "Cerrado",
 };
-
-const documentPreview = [
-  { name: "Documento de identidad", status: "Pendiente" },
-  { name: "Título universitario", status: "Pendiente" },
-  { name: "Certificado académico", status: "Pendiente" },
-  { name: "Apostilla o legalización", status: "Pendiente" },
-];
 
 function readPayload(value: unknown): DiagnosticPayload {
   return value && typeof value === "object" ? (value as DiagnosticPayload) : {};
@@ -81,6 +81,24 @@ export default async function CasePage({ params }: PageProps) {
 
   const payload = readPayload(caseItem.diagnosticPayload);
   const result = payload.result;
+  const documentInterfaceEnabled = isDocumentInterfaceEnabled();
+  let initialDocuments: DocumentSummary[] = [];
+  let documentTypes: DocumentType[] = [];
+
+  if (documentInterfaceEnabled) {
+    try {
+      const documents = getDocumentService();
+      [initialDocuments, documentTypes] = await Promise.all([
+        documents.list(id, user.id).then((items) => items || []),
+        documents.listTypes(),
+      ]);
+    } catch (error) {
+      console.error("document_interface_load_failed", {
+        caseId: id,
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
 
   return (
     <>
@@ -136,21 +154,23 @@ export default async function CasePage({ params }: PageProps) {
               </p>
             </article>
 
-            <article className="detail-card">
-              <div className="panel-heading">
-                <span className="result-label">Preparación</span>
-                <h2>Checklist documental previsto</h2>
-                <p>La carga se mantiene desactivada hasta terminar las pruebas de seguridad con datos ficticios.</p>
-              </div>
-              <div className="document-check-grid">
-                {documentPreview.map((document) => (
-                  <div className="document-check-item" key={document.name}>
-                    <span>{document.name}</span>
-                    <strong>{document.status}</strong>
-                  </div>
-                ))}
-              </div>
-            </article>
+            {documentInterfaceEnabled && documentTypes.length > 0 ? (
+              <DocumentManager
+                caseId={id}
+                documentTypes={documentTypes}
+                initialDocuments={initialDocuments}
+              />
+            ) : (
+              <article className="detail-card">
+                <div className="panel-heading">
+                  <span className="result-label">Preparación</span>
+                  <h2>Checklist documental previsto</h2>
+                  <p>
+                    La carga permanece desactivada hasta configurar el entorno documental privado.
+                  </p>
+                </div>
+              </article>
+            )}
           </div>
 
           <aside className="case-detail-sidebar">
@@ -176,17 +196,25 @@ export default async function CasePage({ params }: PageProps) {
               </dl>
             </article>
 
-            <article className="detail-card locked-feature">
-              <span className="result-label">Próxima fase</span>
+            <article className={`detail-card${documentInterfaceEnabled ? "" : " locked-feature"}`}>
+              <span className="result-label">
+                {documentInterfaceEnabled ? "Canal privado" : "Próxima fase"}
+              </span>
               <h2>Archivos privados</h2>
-              <p>Azure Blob Storage ya tiene adaptador. La interfaz se habilitará cuando validemos aislamiento y retención.</p>
+              <p>
+                {documentInterfaceEnabled
+                  ? "Carga local habilitada para archivos ficticios. El contenido nunca se publica mediante una URL abierta."
+                  : "La interfaz se habilitará cuando el almacenamiento privado esté configurado."}
+              </p>
             </article>
 
             <article className="detail-card">
               <h2>Línea de trabajo</h2>
               <ol className="case-timeline">
                 <li className="is-complete">Diagnóstico creado</li>
-                <li>Documentos por organizar</li>
+                <li className={initialDocuments.length > 0 ? "is-complete" : ""}>
+                  Documentos por organizar
+                </li>
                 <li>Revisión previa pendiente</li>
                 <li>Presentación oficial externa</li>
               </ol>

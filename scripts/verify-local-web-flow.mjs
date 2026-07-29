@@ -63,6 +63,8 @@ assert.doesNotMatch(panel.text, /Expediente ficticio del usuario B/);
 const ownCase = await request(`/panel/expedientes/${fixtures.caseA}`);
 assert.equal(ownCase.response.status, 200);
 assert.match(ownCase.text, /Ingeniería de prueba|Ingenier/);
+assert.match(ownCase.text, /Archivos del expediente/);
+assert.match(ownCase.text, /Carga local habilitada para archivos ficticios/);
 
 const foreignCase = await request(`/panel/expedientes/${fixtures.caseB}`);
 assert.equal(foreignCase.response.status, 404);

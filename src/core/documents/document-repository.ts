@@ -52,6 +52,7 @@ export type CreateDocumentRecordInput = {
  */
 export interface DocumentRepository {
   getActiveDocumentType(code: string): Promise<DocumentType | null>;
+  listActiveDocumentTypes(): Promise<DocumentType[]>;
   listByCaseForUser(caseId: string, userId: string): Promise<DocumentSummary[]>;
   getByIdForUser(
     documentId: string,

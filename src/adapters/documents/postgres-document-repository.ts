@@ -98,6 +98,27 @@ export class PostgresDocumentRepository implements DocumentRepository {
     return row ? { code: row.code, name: row.name_es, sensitivity: row.sensitivity } : null;
   }
 
+  async listActiveDocumentTypes(): Promise<DocumentType[]> {
+    const result = await query<{
+      code: string;
+      name_es: string;
+      sensitivity: DocumentType["sensitivity"];
+    }>(
+      [
+        "select code, name_es, sensitivity",
+        "from document_types",
+        "where active = true",
+        "order by name_es",
+      ].join(" "),
+    );
+
+    return result.rows.map((row) => ({
+      code: row.code,
+      name: row.name_es,
+      sensitivity: row.sensitivity,
+    }));
+  }
+
   async listByCaseForUser(caseId: string, userId: string): Promise<DocumentSummary[]> {
     const result = await query<DocumentRow>(
       [
@@ -181,6 +202,15 @@ export class PostgresDocumentRepository implements DocumentRepository {
           "set status = 'uploaded', updated_at = now()",
         ].join(" "),
         [input.caseId, input.documentType.code],
+      );
+
+      await client.query(
+        [
+          "update cases",
+          "set status = 'collecting_documents', updated_at = now()",
+          "where id = $1 and user_id = $2 and status in ('draft', 'diagnosed')",
+        ].join(" "),
+        [input.caseId, input.userId],
       );
 
       return mapSummary(result.rows[0]);

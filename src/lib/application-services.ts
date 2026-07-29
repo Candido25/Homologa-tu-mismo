@@ -21,6 +21,7 @@ import {
   isAzureBlobConfigured,
   isAzuriteConfigured,
   isLocalTestAuthEnabled,
+  isDocumentUploadUiEnabled,
   isSupabaseConfigured,
 } from "@/lib/env";
 
@@ -92,4 +93,8 @@ export function isDocumentFlowConfigured() {
   if (storageProvider === "azurite") return isAzuriteConfigured();
   if (storageProvider === "azure-blob") return isAzureBlobConfigured();
   return false;
+}
+
+export function isDocumentInterfaceEnabled() {
+  return isDocumentUploadUiEnabled() && isDocumentFlowConfigured();
 }

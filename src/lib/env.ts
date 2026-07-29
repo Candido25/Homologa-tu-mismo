@@ -134,3 +134,7 @@ export function getDocumentRetentionDays() {
   if (!Number.isFinite(configured)) return 30;
   return Math.min(Math.max(configured, 1), 3650);
 }
+
+export function isDocumentUploadUiEnabled() {
+  return value("DOCUMENT_UPLOAD_UI_ENABLED").toLowerCase() === "true";
+}

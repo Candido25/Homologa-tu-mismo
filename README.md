@@ -22,6 +22,7 @@ La versión actual incluye:
 - Entorno local reproducible con PostgreSQL y Azurite.
 - Contratos independientes del proveedor para identidad, expedientes y documentos.
 - API documental privada para archivos ficticios, con metadatos PostgreSQL y contenido en Azurite.
+- Gestor documental local para cargar, versionar, descargar y eliminar archivos ficticios.
 - Validación automatizada de propietario, origen, MIME y firma binaria, tamaño, hash, lectura y eliminación.
 
 ## Arquitectura objetivo

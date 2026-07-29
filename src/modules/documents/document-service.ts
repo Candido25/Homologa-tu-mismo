@@ -46,6 +46,10 @@ export class DocumentService {
     private readonly retentionDays: number,
   ) {}
 
+  listTypes() {
+    return this.documents.listActiveDocumentTypes();
+  }
+
   async list(caseId: string, userId: string): Promise<DocumentSummary[] | null> {
     const ownedCase = await this.cases.getByIdForUser(caseId, userId);
     if (!ownedCase) return null;

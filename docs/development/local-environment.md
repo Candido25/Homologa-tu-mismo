@@ -129,7 +129,7 @@ npm run documents:verify-local
 
 La prueba bloquea origen cruzado, expediente ajeno, MIME inválido o suplantado, archivos vacíos y archivos superiores a 25 MB. Después comprueba contenedor privado, ruta por propietario, metadatos, SHA-256, descarga desde el servidor, borrado físico y estado de eliminación.
 
-La interfaz de carga para usuarios sigue desactivada. La API se valida únicamente con contenido ficticio hasta completar la política de retención y la revisión previa al lanzamiento.
+La interfaz documental se habilita únicamente cuando `DOCUMENT_UPLOAD_UI_ENABLED=true`. Esta bandera se usa en el entorno local con identidad y archivos ficticios; debe permanecer desactivada en cualquier entorno que pueda recibir datos reales hasta completar la política de retención y la revisión previa al lanzamiento.
 
 ## Seguridad de esta fase
 
@@ -137,7 +137,7 @@ La interfaz de carga para usuarios sigue desactivada. La API se valida únicamen
 - No exponer PostgreSQL ni Azurite a Internet.
 - No publicar `.env.local`.
 - No almacenar claves de Azure.
-- No activar carga de documentos desde la interfaz hasta aprobar las pruebas de autorización.
+- No activar `DOCUMENT_UPLOAD_UI_ENABLED` fuera del entorno ficticio hasta aprobar retención y revisión previa al lanzamiento.
 - No ejecutar comandos `az deployment ... create`.
 
 ## Solución de problemas

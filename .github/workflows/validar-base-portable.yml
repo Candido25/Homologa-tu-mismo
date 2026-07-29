@@ -64,6 +64,7 @@ jobs:
       AZURE_STORAGE_CASE_DOCUMENTS_CONTAINER: case-documents
       AZURE_STORAGE_GENERATED_REPORTS_CONTAINER: generated-reports
       DOCUMENT_RETENTION_DAYS: "30"
+      DOCUMENT_UPLOAD_UI_ENABLED: "true"
 
     steps:
       - name: Descargar código

@@ -68,6 +68,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Implementar rutas de blob por usuario y expediente.
 - [x] Entregar descargas desde el servidor sin exponer URL pública.
 - [x] Aplicar límites de tamaño, tipo MIME, hash y borrado en el adaptador.
+- [x] Implementar gestor documental controlado para el entorno local ficticio.
 - [ ] Aplicar política de retención documental completa.
 - [x] Probar únicamente con archivos ficticios durante desarrollo.
 
