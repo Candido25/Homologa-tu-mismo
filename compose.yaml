@@ -1,0 +1,40 @@
+name: homologa-tu-mismo-local
+
+services:
+  postgres:
+    image: postgres:16.14-alpine3.23
+    environment:
+      POSTGRES_DB: homologa
+      POSTGRES_USER: homologa
+      POSTGRES_PASSWORD: homologa_local_only
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homologa -d homologa"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - homologa_postgres_data:/var/lib/postgresql/data
+      - ./database:/database:ro
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.36.0
+    command: >-
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --location /data
+      --debug /data/debug.log
+      --disableTelemetry
+    ports:
+      - "${AZURITE_BLOB_PORT:-10000}:10000"
+      - "${AZURITE_QUEUE_PORT:-10001}:10001"
+      - "${AZURITE_TABLE_PORT:-10002}:10002"
+    volumes:
+      - homologa_azurite_data:/data
+
+volumes:
+  homologa_postgres_data:
+  homologa_azurite_data:
