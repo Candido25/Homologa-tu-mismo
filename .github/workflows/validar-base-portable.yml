@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "database/**"
+      - "scripts/verify-local-isolation.mjs"
       - "compose.yaml"
       - "package.json"
       - ".github/workflows/validar-base-portable.yml"
@@ -12,6 +13,7 @@ on:
       - main
     paths:
       - "database/**"
+      - "scripts/verify-local-isolation.mjs"
       - "compose.yaml"
       - "package.json"
       - ".github/workflows/validar-base-portable.yml"
@@ -45,10 +47,20 @@ jobs:
       PGPORT: "5432"
       PGDATABASE: homologa
       PGUSER: homologa
+      DATABASE_URL: postgresql://homologa:homologa_ci_only@localhost:5432/homologa
 
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          package-manager-cache: false
+
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
 
       - name: Aplicar migración portable
         run: psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
@@ -67,6 +79,9 @@ jobs:
           test "$(psql -Atc "select count(*) from app_users;")" = "2"
           test "$(psql -Atc "select count(*) from cases where user_id = '00000000-0000-4000-8000-000000000001';")" = "1"
           test "$(psql -Atc "select count(*) from cases where user_id = '00000000-0000-4000-8000-000000000002';")" = "1"
+
+      - name: Validar aislamiento de expedientes ficticios
+        run: npm run security:verify-local
 
       - name: Rechazar documento con propietario incorrecto
         shell: bash

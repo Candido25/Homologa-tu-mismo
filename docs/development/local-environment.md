@@ -30,6 +30,7 @@ npm run local:up
 npm run db:migrate
 npm run db:seed
 npm run db:verify
+npm run security:verify-local
 npm run storage:verify
 npm run dev
 ```
@@ -50,6 +51,7 @@ npm run local:status   # muestra el estado de los contenedores
 npm run db:migrate     # aplica el esquema PostgreSQL portable
 npm run db:seed        # agrega referencias y datos ficticios
 npm run db:verify      # verifica el historial de migraciones
+npm run security:verify-local # valida aislamiento entre dos usuarios ficticios
 npm run storage:verify # prueba contenedor privado, carga, lectura y eliminación
 npm run local:down     # detiene los servicios sin borrar datos
 npm run local:reset    # borra volúmenes y reconstruye todo
@@ -80,6 +82,8 @@ El archivo `database/seeds/9000_local_test_fixtures.sql` crea:
 Cada usuario tiene un expediente propio. El valor de `LOCAL_TEST_USER_ID` selecciona cuál de esos usuarios representa la sesión local.
 
 Para cambiar de usuario de prueba, editar `.env.local`, reiniciar `npm run dev` y usar uno de los UUID anteriores.
+
+`npm run security:verify-local` usa esos dos usuarios y falla si alguno puede listar o abrir por ID el expediente del otro.
 
 ## Almacenamiento local
 
