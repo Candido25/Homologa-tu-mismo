@@ -80,7 +80,10 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Crear workflow manual de infraestructura con `what-if`.
 - [ ] Añadir aprobación manual al GitHub Environment `development`.
 - [ ] Crear workflow de aplicación para Azure App Service.
-- [ ] Programar y supervisar la ejecución de retención documental en Azure.
+- [x] Preparar workflow diario de retención con OIDC, Key Vault y resumen operativo.
+- [x] Preparar prueba manual de recuperación de un blob ficticio.
+- [ ] Ejecutar y supervisar retención y recuperación en el entorno Azure desplegado.
+- [ ] Configurar alerta por fallo o ausencia de ejecución de retención.
 - [ ] Verificar que GitHub no almacene secretos permanentes de Azure.
 
 ### Fase 6 — Validación funcional y seguridad
@@ -91,6 +94,7 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Aislamiento entre dos usuarios ficticios.
 - [x] Pruebas de acceso denegado a blobs ajenos.
 - [ ] Revisión de registros para descartar datos sensibles.
+- [ ] Ejecutar la prueba de recuperación documental en Azure con datos ficticios.
 - [ ] Restauración de base de datos en un entorno de prueba.
 
 ### Fase 7 — Producción comercial

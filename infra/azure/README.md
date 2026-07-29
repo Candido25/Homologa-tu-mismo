@@ -26,12 +26,15 @@ La vista previa de desarrollo contiene:
 - App Service Plan F1 para pruebas.
 - Storage Account sin acceso público a blobs ni claves compartidas.
 - Contenedores privados `case-documents` y `generated-reports`.
+- Borrado recuperable de blobs y contenedores durante 30 días.
 - Key Vault con RBAC y borrado recuperable.
 - Application Insights y Log Analytics.
 - Identidad administrada para App Service.
 - Permisos mínimos de la aplicación sobre Blob Storage y Key Vault.
 - Azure Database for PostgreSQL Flexible Server opcional, desactivado por defecto en `dev.bicepparam`.
 - Secreto `database-url` en Key Vault cuando PostgreSQL se despliega.
+- Token de retención en Key Vault cuando se proporciona como parámetro seguro.
+- Permisos acotados para la identidad federada de operaciones documentales.
 
 Microsoft Entra External ID todavía no forma parte de la plantilla porque requiere configuración de tenant y flujos fuera del alcance básico de Bicep.
 
@@ -71,6 +74,8 @@ También existe el workflow manual **Azure what-if** en GitHub Actions. Requiere
 La identidad federada de Azure debe confiar en el repositorio y en el environment `development`.
 
 La guía paso a paso está en [`docs/azure/github-oidc-development.md`](../../docs/azure/github-oidc-development.md).
+
+La programación de retención y la prueba de recuperación están descritas en [`docs/azure/document-operations.md`](../../docs/azure/document-operations.md). Ninguna de ellas crea recursos por sí sola; requieren que la plataforma haya sido desplegada y configurada.
 
 El workflow manual ejecuta `what-if` con `assignManagedIdentityRoles=false` para no requerir permisos de administrador de acceso sobre la suscripción. El despliegue real debe revisar y activar las asignaciones RBAC de App Service a Storage y Key Vault.
 

@@ -71,3 +71,13 @@ postgresSkuName=B_Standard_B1ms
 - Cuando PostgreSQL se active, usar `B_Standard_B1ms` y apagar o eliminar recursos si no se usan.
 - Revisar Cost Management después de cada simulación o despliegue.
 - Mantener alertas al 50 %, 80 % y 100 % del crédito disponible.
+
+## Identidad para operaciones documentales
+
+La retención programada y la prueba manual de recuperación utilizan un Environment separado llamado `development-operations`. Su credencial federada debe usar el subject:
+
+```text
+repo:<propietario>/<repositorio>:environment:development-operations
+```
+
+Esta identidad no conserva el token de retención en GitHub: lo lee temporalmente desde el secreto específico de Key Vault mediante OIDC. La configuración, variables y permisos mínimos se detallan en [`document-operations.md`](document-operations.md).

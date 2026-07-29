@@ -24,6 +24,8 @@ La versión actual incluye:
 - API documental privada para archivos ficticios, con metadatos PostgreSQL y contenido en Azurite.
 - Gestor documental local para cargar, versionar, descargar y eliminar archivos ficticios.
 - Retención automática portable con vencimiento, borrado físico y auditoría mínima.
+- Automatización diaria Azure preparada con OIDC, Key Vault y métricas agregadas.
+- Prueba manual de borrado recuperable preparada para Blob Storage con archivos ficticios.
 - Validación automatizada de propietario, origen, MIME y firma binaria, tamaño, hash, lectura y eliminación.
 
 ## Arquitectura objetivo
@@ -112,6 +114,7 @@ npm run db:migrate
 npm run db:seed
 npm run db:verify
 npm run documents:verify-local
+npm run retention:verify-local
 npm run local:down
 npm run local:reset
 ```
@@ -153,8 +156,9 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 4. Aplicar migraciones portables en Azure PostgreSQL.
 5. Configurar Microsoft Entra External ID.
 6. Sustituir Supabase por adaptadores Azure.
-7. Programar la retención en Azure y probar restauración; la política y eliminación de vencidos ya se validan localmente.
-8. Preparar GitHub OIDC y workflow con aprobación manual.
+7. Desplegar y ejecutar en Azure los workflows ya preparados de retención y recuperación documental.
+8. Configurar alertas por fallo o ausencia de la ejecución programada.
+9. Preparar el workflow de despliegue de App Service con aprobación manual.
 
 ## Propiedad
 

@@ -84,7 +84,9 @@ Antes del lanzamiento se definirán plazos por tipo de dato. Como principio:
 
 El usuario deberá poder solicitar la eliminación de su cuenta y expediente. El sistema registrará la ejecución de la eliminación sin conservar el contenido eliminado.
 
-La implementación portable asigna vencimiento al cargar, elimina blobs vencidos mediante un proceso interno autenticado y registra únicamente identificadores técnicos y la fuente `retention`. Este comportamiento se prueba con archivos ficticios en local y CI; la programación y supervisión del proceso debe configurarse por separado en cada entorno administrado.
+La implementación portable asigna vencimiento al cargar, elimina blobs vencidos mediante un proceso interno autenticado y registra únicamente identificadores técnicos y la fuente `retention`. Este comportamiento se prueba con archivos ficticios en local y CI.
+
+En Azure, el proceso diario queda preparado con OIDC y un token almacenado en Key Vault. La fecha de vencimiento retira el documento del flujo normal; Blob Soft Delete conserva el objeto eliminado durante 30 días adicionales para recuperación operativa y después lo elimina definitivamente. Esta ventana debe comunicarse al usuario y no puede ampliarse sin revisión de privacidad.
 
 ## Evaluación de impacto
 
@@ -114,5 +116,7 @@ Antes de habilitar análisis documental para usuarios reales se debe realizar un
 - [ ] Contratos/DPA revisados.
 - [ ] Plan de respuesta a incidentes.
 - [x] Eliminación y retención probadas con archivos ficticios en local y CI.
+- [x] Automatización Azure y prueba de recuperación preparadas sin secretos permanentes en GitHub.
+- [ ] Retención, recuperación y alertas ejecutadas en el entorno Azure desplegado.
 - [ ] IA desactivable mediante configuración.
 - [ ] Evaluación de impacto completada antes de análisis documental real.
