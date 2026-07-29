@@ -72,6 +72,8 @@ La identidad federada de Azure debe confiar en el repositorio y en el environmen
 
 La guía paso a paso está en [`docs/azure/github-oidc-development.md`](../../docs/azure/github-oidc-development.md).
 
+El workflow manual ejecuta `what-if` con `assignManagedIdentityRoles=false` para no requerir permisos de administrador de acceso sobre la suscripción. El despliegue real debe revisar y activar las asignaciones RBAC de App Service a Storage y Key Vault.
+
 Para incluir PostgreSQL en la simulación o despliegue de desarrollo, pasar parámetros explícitos y una contraseña segura fuera del repositorio:
 
 ```bash

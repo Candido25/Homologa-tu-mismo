@@ -73,7 +73,7 @@ jobs:
             --location chilecentral \
             --template-file infra/azure/main.bicep \
             --parameters infra/azure/parameters/dev.bicepparam \
-            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=false
+            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=false assignManagedIdentityRoles=false
 
       - name: Ejecutar what-if con PostgreSQL
         if: ${{ inputs.deployPostgres == 'true' }}
@@ -84,4 +84,4 @@ jobs:
             --location chilecentral \
             --template-file infra/azure/main.bicep \
             --parameters infra/azure/parameters/dev.bicepparam \
-            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=true postgresSkuName='${{ inputs.postgresSkuName }}' postgresAdminPassword="$POSTGRES_ADMIN_PASSWORD"
+            --parameters appServiceSku='${{ inputs.appServiceSku }}' deployPostgres=true postgresSkuName='${{ inputs.postgresSkuName }}' postgresAdminPassword="$POSTGRES_ADMIN_PASSWORD" assignManagedIdentityRoles=false

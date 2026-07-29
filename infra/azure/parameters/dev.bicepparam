@@ -9,3 +9,4 @@ param postgresSkuName = 'B_Standard_B1ms'
 param postgresSkuTier = 'Burstable'
 param postgresStorageGiB = 32
 param postgresAllowAzureServices = true
+param assignManagedIdentityRoles = true

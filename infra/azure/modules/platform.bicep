@@ -32,6 +32,9 @@ param postgresStorageGiB int
 @description('Permitir conexiones desde otros servicios de Azure al PostgreSQL de desarrollo.')
 param postgresAllowAzureServices bool = true
 
+@description('Crear asignaciones RBAC para la identidad administrada de App Service.')
+param assignManagedIdentityRoles bool = true
+
 var suffix = take(uniqueString(subscription().subscriptionId, resourceGroup().id, environment), 6)
 var normalizedProject = toLower(replace(projectName, '-', ''))
 var storageAccountName = take('st${normalizedProject}${environment}${suffix}', 24)
@@ -284,7 +287,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
 var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 
-resource storageBlobRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource storageBlobRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles) {
   name: guid(storageAccount.id, webApp.id, storageBlobDataContributorRoleId)
   scope: storageAccount
   properties: {
@@ -294,7 +297,7 @@ resource storageBlobRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-resource keyVaultSecretsRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource keyVaultSecretsRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignManagedIdentityRoles) {
   name: guid(keyVault.id, webApp.id, keyVaultSecretsUserRoleId)
   scope: keyVault
   properties: {

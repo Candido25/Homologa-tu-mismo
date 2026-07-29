@@ -44,6 +44,9 @@ param postgresStorageGiB int = 32
 @description('Permitir conexiones desde otros servicios de Azure al PostgreSQL de desarrollo.')
 param postgresAllowAzureServices bool = true
 
+@description('Crear asignaciones RBAC para la identidad administrada de App Service. Puede desactivarse en what-if con permisos limitados.')
+param assignManagedIdentityRoles bool = true
+
 var resourceGroupName = 'rg-${projectName}-${environment}'
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -71,6 +74,7 @@ module platform './modules/platform.bicep' = {
     postgresSkuTier: postgresSkuTier
     postgresStorageGiB: postgresStorageGiB
     postgresAllowAzureServices: postgresAllowAzureServices
+    assignManagedIdentityRoles: assignManagedIdentityRoles
   }
 }
 
