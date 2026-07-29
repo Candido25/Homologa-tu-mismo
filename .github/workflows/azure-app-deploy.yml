@@ -62,7 +62,10 @@ jobs:
             cd "$RUNNER_TEMP/homologa-package"
             zip -q -r "$RUNNER_TEMP/homologa-app.zip" .
           )
-          sha256sum "$RUNNER_TEMP/homologa-app.zip" > "$RUNNER_TEMP/homologa-app.zip.sha256"
+          (
+            cd "$RUNNER_TEMP"
+            sha256sum homologa-app.zip > homologa-app.zip.sha256
+          )
 
       - name: Publicar artefacto
         uses: actions/upload-artifact@v4
