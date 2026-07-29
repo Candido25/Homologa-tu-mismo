@@ -1,6 +1,6 @@
 using '../main.bicep'
 
 param environment = 'dev'
-param location = 'westeurope'
+param location = 'eastus'
 param projectName = 'homologa'
 param appServiceSku = 'F1'
