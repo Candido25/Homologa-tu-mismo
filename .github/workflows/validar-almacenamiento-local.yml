@@ -1,0 +1,86 @@
+name: Validar almacenamiento local
+
+on:
+  pull_request:
+    paths:
+      - "src/adapters/storage/**"
+      - "src/core/storage/**"
+      - "src/lib/application-services.ts"
+      - "src/lib/env.ts"
+      - "scripts/verify-azurite.mjs"
+      - "compose.yaml"
+      - "package.json"
+      - ".github/workflows/validar-almacenamiento-local.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/adapters/storage/**"
+      - "src/core/storage/**"
+      - "src/lib/application-services.ts"
+      - "src/lib/env.ts"
+      - "scripts/verify-azurite.mjs"
+      - "compose.yaml"
+      - "package.json"
+      - ".github/workflows/validar-almacenamiento-local.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar-azurite:
+    runs-on: ubuntu-latest
+
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Iniciar Azurite
+        run: |
+          docker run -d --name homologa-azurite \
+            -p 10000:10000 \
+            -p 10001:10001 \
+            -p 10002:10002 \
+            mcr.microsoft.com/azure-storage/azurite:3.36.0 \
+            azurite \
+            --blobHost 0.0.0.0 \
+            --queueHost 0.0.0.0 \
+            --tableHost 0.0.0.0 \
+            --skipApiVersionCheck \
+            --disableTelemetry
+
+      - name: Esperar a Azurite
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if curl -s http://127.0.0.1:10000/devstoreaccount1 >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs homologa-azurite
+          echo "Azurite no respondió dentro del plazo."
+          exit 1
+
+      - name: Probar almacenamiento privado
+        run: npm run storage:verify
+
+      - name: Mostrar logs de Azurite si falla
+        if: failure()
+        run: docker logs homologa-azurite
+
+      - name: Detener Azurite
+        if: always()
+        run: docker rm -f homologa-azurite || true
