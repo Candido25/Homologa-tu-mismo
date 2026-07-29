@@ -152,6 +152,10 @@ nav {
   gap: 64px;
 }
 
+.hero-grid > * {
+  min-width: 0;
+}
+
 .eyebrow {
   display: inline-flex;
   margin: 0 0 18px;
@@ -697,12 +701,12 @@ select:focus {
   .cta-panel,
   .page-header-grid,
   .process-band {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .card-grid,
   .proof-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .result-card {
@@ -712,15 +716,89 @@ select:focus {
 
 @media (max-width: 620px) {
   .container {
-    width: min(100% - 28px, 1120px);
+    width: min(calc(100% - 28px), 1120px);
+  }
+
+  .header-inner {
+    gap: 10px;
+  }
+
+  .brand {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+
+  .brand strong {
+    overflow: hidden;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .brand small {
     display: none;
   }
 
+  nav {
+    flex: 0 0 auto;
+    gap: 0;
+  }
+
+  .button-small {
+    min-height: 40px;
+    padding-inline: 13px;
+    white-space: nowrap;
+  }
+
   .hero {
     padding-top: 60px;
+  }
+
+  .hero h1 {
+    font-size: 2.35rem;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+  }
+
+  .trust-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-strip span {
+    display: grid;
+    min-height: 44px;
+    place-items: center;
+    text-align: center;
+  }
+
+  .preview-card {
+    padding-inline: 18px;
+  }
+
+  .preview-card::before {
+    right: 18px;
+  }
+
+  .document-item {
+    align-items: flex-start;
+  }
+
+  .document-item > :first-child {
+    min-width: 0;
   }
 
   .field-grid,
