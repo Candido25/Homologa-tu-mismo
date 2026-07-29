@@ -33,19 +33,23 @@ export default function DiagnosticoPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const pending = window.sessionStorage.getItem("homologa-pending-diagnostic");
-    if (!pending) return;
+    const animationFrame = window.requestAnimationFrame(() => {
+      const pending = window.sessionStorage.getItem("homologa-pending-diagnostic");
+      if (!pending) return;
 
-    try {
-      const parsed = JSON.parse(pending) as PendingDiagnostic;
-      if (parsed?.input?.degree && parsed?.result?.route) {
-        setForm(parsed.input);
-        setResult(parsed.result);
-        setMessage("Recuperamos tu diagnóstico. Ya puedes guardarlo en tu panel.");
+      try {
+        const parsed = JSON.parse(pending) as PendingDiagnostic;
+        if (parsed?.input?.degree && parsed?.result?.route) {
+          setForm(parsed.input);
+          setResult(parsed.result);
+          setMessage("Recuperamos tu diagnóstico. Ya puedes guardarlo en tu panel.");
+        }
+      } catch {
+        window.sessionStorage.removeItem("homologa-pending-diagnostic");
       }
-    } catch {
-      window.sessionStorage.removeItem("homologa-pending-diagnostic");
-    }
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
   }, []);
 
   function rememberPending(nextResult: DiagnosticResult) {

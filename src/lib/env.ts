@@ -128,3 +128,9 @@ export function isApplicationDataConfigured() {
 export function getApplicationUrl() {
   return process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000";
 }
+
+export function getDocumentRetentionDays() {
+  const configured = Number.parseInt(value("DOCUMENT_RETENTION_DAYS"), 10);
+  if (!Number.isFinite(configured)) return 30;
+  return Math.min(Math.max(configured, 1), 3650);
+}

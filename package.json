@@ -18,6 +18,7 @@
     "db:seed": "docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U homologa -d homologa -f /database/seeds/0001_reference_data.sql && docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U homologa -d homologa -f /database/seeds/9000_local_test_fixtures.sql",
     "db:verify": "docker compose exec -T postgres psql -U homologa -d homologa -c \"select version, applied_at from schema_migrations order by applied_at;\"",
     "app:verify-local": "node scripts/verify-local-web-flow.mjs",
+    "documents:verify-local": "node scripts/verify-local-document-flow.mjs",
     "security:verify-local": "node scripts/verify-local-isolation.mjs",
     "storage:verify": "node scripts/verify-azurite.mjs"
   },

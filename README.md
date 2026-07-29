@@ -21,6 +21,8 @@ La versión actual incluye:
 - Esquema PostgreSQL portable sin referencias a `auth.users` ni `auth.uid()`.
 - Entorno local reproducible con PostgreSQL y Azurite.
 - Contratos independientes del proveedor para identidad, expedientes y documentos.
+- API documental privada para archivos ficticios, con metadatos PostgreSQL y contenido en Azurite.
+- Validación automatizada de propietario, origen, MIME y firma binaria, tamaño, hash, lectura y eliminación.
 
 ## Arquitectura objetivo
 
@@ -107,6 +109,7 @@ npm run local:status
 npm run db:migrate
 npm run db:seed
 npm run db:verify
+npm run documents:verify-local
 npm run local:down
 npm run local:reset
 ```
@@ -148,7 +151,7 @@ Las migraciones de `supabase/migrations/` se conservan temporalmente como refere
 4. Aplicar migraciones portables en Azure PostgreSQL.
 5. Configurar Microsoft Entra External ID.
 6. Sustituir Supabase por adaptadores Azure.
-7. Probar aislamiento, MIME, tamaño, hash, retención y eliminación.
+7. Completar la política de retención y probar restauración; aislamiento, MIME, tamaño, hash y eliminación ya se validan localmente.
 8. Preparar GitHub OIDC y workflow con aprobación manual.
 
 ## Propiedad

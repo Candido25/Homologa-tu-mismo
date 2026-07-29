@@ -113,7 +113,7 @@ Los adaptadores `AzuriteDocumentStorage` y `AzureBlobDocumentStorage` comparten 
 
 - usa contenedores privados sin acceso público;
 - genera rutas con usuario, expediente y documento;
-- admite únicamente PDF, JPEG y PNG;
+- admite únicamente PDF, JPEG y PNG y valida su firma binaria;
 - rechaza archivos vacíos o superiores a 25 MB;
 - calcula SHA-256 antes de guardar y lo comprueba al leer;
 - rechaza rutas fuera del patrón autorizado;
@@ -121,7 +121,15 @@ Los adaptadores `AzuriteDocumentStorage` y `AzureBlobDocumentStorage` comparten 
 
 `AzureBlobDocumentStorage` usa identidad administrada mediante `DefaultAzureCredential`; no debe usar claves de cuenta ni variables `NEXT_PUBLIC_*`.
 
-La interfaz de carga para usuarios sigue desactivada. El adaptador se valida únicamente con contenido ficticio hasta terminar las pruebas de autorización y metadatos.
+La API documental privada ya integra autorización por propietario, metadatos en PostgreSQL y contenido en Azurite. Para validarla con un PDF generado y sin datos personales:
+
+```bash
+npm run documents:verify-local
+```
+
+La prueba bloquea origen cruzado, expediente ajeno, MIME inválido o suplantado, archivos vacíos y archivos superiores a 25 MB. Después comprueba contenedor privado, ruta por propietario, metadatos, SHA-256, descarga desde el servidor, borrado físico y estado de eliminación.
+
+La interfaz de carga para usuarios sigue desactivada. La API se valida únicamente con contenido ficticio hasta completar la política de retención y la revisión previa al lanzamiento.
 
 ## Seguridad de esta fase
 

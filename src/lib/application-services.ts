@@ -2,16 +2,20 @@ import "server-only";
 
 import { PostgresCaseRepository } from "@/adapters/cases/postgres-case-repository";
 import { SupabaseCaseRepository } from "@/adapters/cases/supabase-case-repository";
+import { PostgresDocumentRepository } from "@/adapters/documents/postgres-document-repository";
 import { LocalTestCurrentUserProvider } from "@/adapters/identity/local-test-current-user";
 import { SupabaseCurrentUserProvider } from "@/adapters/identity/supabase-current-user";
 import { AzureBlobDocumentStorage } from "@/adapters/storage/azure-blob-document-storage";
 import { AzuriteDocumentStorage } from "@/adapters/storage/azurite-document-storage";
 import type { CaseRepository } from "@/core/cases/case-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
+import type { DocumentRepository } from "@/core/documents/document-repository";
 import type { DocumentStorage } from "@/core/storage/document-storage";
+import { DocumentService } from "@/modules/documents/document-service";
 import {
   getAuthProviderName,
   getDatabaseProviderName,
+  getDocumentRetentionDays,
   getStorageProviderName,
   isApplicationDataConfigured,
   isAzureBlobConfigured,
@@ -59,8 +63,33 @@ export function getDocumentStorage(): DocumentStorage {
   throw new Error("El adaptador heredado de Supabase Storage no está habilitado.");
 }
 
+export function getDocumentRepository(): DocumentRepository {
+  if (getDatabaseProviderName() !== "postgres") {
+    throw new Error("La persistencia documental portable requiere PostgreSQL.");
+  }
+  return new PostgresDocumentRepository();
+}
+
+export function getDocumentService() {
+  return new DocumentService(
+    getCaseRepository(),
+    getDocumentRepository(),
+    getDocumentStorage(),
+    getDocumentRetentionDays(),
+  );
+}
+
 export function isPrivateAreaConfigured() {
   const authProvider = getAuthProviderName();
   const authConfigured = authProvider === "local-test" ? isLocalTestAuthEnabled() : isSupabaseConfigured();
   return authConfigured && isApplicationDataConfigured();
+}
+
+export function isDocumentFlowConfigured() {
+  if (!isPrivateAreaConfigured() || getDatabaseProviderName() !== "postgres") return false;
+
+  const storageProvider = getStorageProviderName();
+  if (storageProvider === "azurite") return isAzuriteConfigured();
+  if (storageProvider === "azure-blob") return isAzureBlobConfigured();
+  return false;
 }

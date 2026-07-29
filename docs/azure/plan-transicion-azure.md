@@ -64,12 +64,12 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 - [x] Implementar adaptador Azure Blob Storage con identidad administrada.
 - [ ] Sustituir Supabase Storage por Azure Blob Storage en el flujo de usuario.
-- [ ] Mantener contenedores `case-documents` y `generated-reports` privados.
+- [x] Validar contenedores privados con Azurite en desarrollo y CI.
 - [x] Implementar rutas de blob por usuario y expediente.
-- [ ] Generar acceso temporal únicamente desde el servidor.
+- [x] Entregar descargas desde el servidor sin exponer URL pública.
 - [x] Aplicar límites de tamaño, tipo MIME, hash y borrado en el adaptador.
 - [ ] Aplicar política de retención documental completa.
-- [ ] Probar únicamente con archivos ficticios durante desarrollo.
+- [x] Probar únicamente con archivos ficticios durante desarrollo.
 
 ### Fase 5 — Despliegue continuo de desarrollo
 
@@ -85,9 +85,9 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 
 - [ ] Registro, confirmación, inicio y cierre de sesión.
 - [ ] Redirección de `/panel` sin sesión.
-- [ ] Creación y lectura de expedientes ficticios.
-- [ ] Aislamiento entre dos usuarios ficticios.
-- [ ] Pruebas de acceso denegado a blobs ajenos.
+- [x] Creación y lectura de expedientes ficticios.
+- [x] Aislamiento entre dos usuarios ficticios.
+- [x] Pruebas de acceso denegado a blobs ajenos.
 - [ ] Revisión de registros para descartar datos sensibles.
 - [ ] Restauración de base de datos en un entorno de prueba.
 

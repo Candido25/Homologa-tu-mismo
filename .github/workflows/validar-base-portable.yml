@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - "database/**"
+      - "src/**"
+      - "scripts/verify-local-document-flow.mjs"
       - "scripts/verify-local-isolation.mjs"
       - "compose.yaml"
+      - "next.config.ts"
       - "package.json"
       - ".github/workflows/validar-base-portable.yml"
   push:
@@ -13,8 +16,11 @@ on:
       - main
     paths:
       - "database/**"
+      - "src/**"
+      - "scripts/verify-local-document-flow.mjs"
       - "scripts/verify-local-isolation.mjs"
       - "compose.yaml"
+      - "next.config.ts"
       - "package.json"
       - ".github/workflows/validar-base-portable.yml"
   workflow_dispatch:
@@ -48,6 +54,16 @@ jobs:
       PGDATABASE: homologa
       PGUSER: homologa
       DATABASE_URL: postgresql://homologa:homologa_ci_only@localhost:5432/homologa
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      APP_ENV: local
+      AUTH_PROVIDER: local-test
+      DATABASE_PROVIDER: postgres
+      STORAGE_PROVIDER: azurite
+      LOCAL_TEST_USER_ID: 00000000-0000-4000-8000-000000000001
+      AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
+      AZURE_STORAGE_CASE_DOCUMENTS_CONTAINER: case-documents
+      AZURE_STORAGE_GENERATED_REPORTS_CONTAINER: generated-reports
+      DOCUMENT_RETENTION_DAYS: "30"
 
     steps:
       - name: Descargar código
@@ -82,6 +98,45 @@ jobs:
 
       - name: Validar aislamiento de expedientes ficticios
         run: npm run security:verify-local
+
+      - name: Iniciar Azurite
+        run: |
+          docker run --detach --rm \
+            --name homologa-azurite-ci \
+            --publish 10000:10000 \
+            mcr.microsoft.com/azure-storage/azurite:3.36.0 \
+            azurite-blob \
+            --blobHost 0.0.0.0 \
+            --skipApiVersionCheck \
+            --disableTelemetry
+          for attempt in $(seq 1 30); do
+            if curl --silent --output /dev/null http://localhost:10000/devstoreaccount1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs homologa-azurite-ci
+          exit 1
+
+      - name: Iniciar aplicación local
+        run: |
+          npm run dev > /tmp/homologa-next.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://localhost:3000/api/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/homologa-next.log
+          exit 1
+
+      - name: Validar almacenamiento y flujo documental ficticio
+        run: |
+          npm run storage:verify
+          npm run documents:verify-local
+
+      - name: Verificar tipos
+        run: npm run typecheck
 
       - name: Rechazar documento con propietario incorrecto
         shell: bash
