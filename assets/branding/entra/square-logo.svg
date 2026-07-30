@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <rect width="240" height="240" rx="32" fill="#0a3f3b"/>
+  <path d="M120 0h88a32 32 0 0 1 32 32v176a32 32 0 0 1-32 32h-88z" fill="#214a73"/>
+  <rect x="30" y="30" width="180" height="180" rx="24" fill="none" stroke="#ffffff"
+    stroke-opacity=".26" stroke-width="3"/>
+  <text x="120" y="145" fill="#ffffff" font-family="Arial, Helvetica, sans-serif"
+    font-size="78" font-weight="700" text-anchor="middle">HT</text>
+  <rect x="82" y="169" width="76" height="6" rx="3" fill="#c9842b"/>
+</svg>

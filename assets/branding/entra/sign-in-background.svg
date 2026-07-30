@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f5f7f4"/>
+  <rect width="690" height="1080" fill="#0a3f3b"/>
+  <rect x="690" width="12" height="1080" fill="#c9842b"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity=".1" stroke-width="2">
+    <path d="M0 160h690M0 320h690M0 480h690M0 640h690M0 800h690M0 960h690"/>
+    <path d="M115 0v1080M230 0v1080M345 0v1080M460 0v1080M575 0v1080"/>
+  </g>
+  <g transform="translate(135 250)">
+    <rect x="0" y="0" width="420" height="510" rx="20" fill="#ffffff" fill-opacity=".08"
+      stroke="#ffffff" stroke-opacity=".35" stroke-width="3"/>
+    <rect x="50" y="60" width="200" height="18" rx="9" fill="#ffffff" fill-opacity=".78"/>
+    <rect x="50" y="110" width="320" height="10" rx="5" fill="#ffffff" fill-opacity=".28"/>
+    <rect x="50" y="145" width="270" height="10" rx="5" fill="#ffffff" fill-opacity=".22"/>
+    <g transform="translate(50 215)">
+      <circle cx="15" cy="15" r="15" fill="#c9842b"/>
+      <path d="m8 15 5 5 10-11" fill="none" stroke="#ffffff" stroke-width="4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="55" y="8" width="230" height="13" rx="6.5" fill="#ffffff" fill-opacity=".55"/>
+    </g>
+    <g transform="translate(50 285)">
+      <circle cx="15" cy="15" r="15" fill="none" stroke="#ffffff" stroke-opacity=".55"
+        stroke-width="3"/>
+      <rect x="55" y="8" width="260" height="13" rx="6.5" fill="#ffffff" fill-opacity=".34"/>
+    </g>
+    <g transform="translate(50 355)">
+      <circle cx="15" cy="15" r="15" fill="none" stroke="#ffffff" stroke-opacity=".55"
+        stroke-width="3"/>
+      <rect x="55" y="8" width="190" height="13" rx="6.5" fill="#ffffff" fill-opacity=".34"/>
+    </g>
+    <rect x="50" y="440" width="140" height="12" rx="6" fill="#ffffff" fill-opacity=".18"/>
+    <rect x="50" y="468" width="205" height="12" rx="6" fill="#ffffff" fill-opacity=".18"/>
+  </g>
+  <g fill="none" stroke="#214a73" stroke-opacity=".09" stroke-width="3">
+    <path d="M820 160h980M820 260h760M820 860h870M820 960h520"/>
+    <path d="M1550 0v240M1720 0v380M980 800v280M1160 900v180"/>
+  </g>
+</svg>

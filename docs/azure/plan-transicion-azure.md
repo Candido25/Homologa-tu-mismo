@@ -61,10 +61,11 @@ Trasladar Homologa Tú Mismo a una arquitectura completamente administrada en Az
 - [x] Implementar MSAL/OpenID Connect con PKCE, `state`, `nonce` y sesión opaca propia.
 - [x] Preparar el mapeo estable `issuer` + `subject` hacia `external_identities`.
 - [x] Preparar cierre de sesión local y de Entra.
-- [ ] Crear tenant de Microsoft Entra External ID.
-- [ ] Registrar la aplicación web.
-- [ ] Configurar flujo de registro e inicio de sesión.
-- [ ] Configurar confirmación de correo y recuperación de contraseña.
+- [x] Crear tenant de Microsoft Entra External ID.
+- [x] Registrar la aplicación web.
+- [x] Configurar flujo de registro e inicio de sesión.
+- [x] Configurar confirmación de correo y recuperación de contraseña.
+- [ ] Aplicar y validar la identidad visual preparada en el inicio de sesión administrado por Entra.
 - [ ] Activar Entra en Azure y retirar Supabase Auth después de la validación.
 
 ### Fase 4 — Documentos
