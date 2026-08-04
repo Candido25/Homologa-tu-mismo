@@ -6,6 +6,7 @@ import {
   type DiagnosticObjective,
   type DiagnosticResult,
 } from "@/modules/diagnostics/evaluate";
+import { saveDiagnosticCase } from "./actions";
 
 type DiagnosticForm = {
   country: string;
@@ -94,27 +95,21 @@ export default function DiagnosticoPage() {
     setMessage("");
 
     try {
-      const response = await fetch("/api/expedientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await response.json();
+      const response = await saveDiagnosticCase(form);
 
-      if (response.status === 401) {
-        rememberPending(result);
-        window.location.assign(`/iniciar-sesion?siguiente=${encodeURIComponent("/diagnostico")}`);
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error ?? "No fue posible guardar el expediente.");
+      if (!response.success) {
+        if (response.code === "unauthenticated") {
+          rememberPending(result);
+          window.location.assign(`/iniciar-sesion?siguiente=${encodeURIComponent("/diagnostico")}`);
+          return;
+        }
+        throw new Error(response.error);
       }
 
       window.sessionStorage.removeItem("homologa-pending-diagnostic");
-      window.location.assign(`/panel/expedientes/${data.id}`);
+      window.location.assign(`/panel/expedientes/${response.caseId}`);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Ocurrió un error inesperado.");
+      setError(caughtError instanceof Error ? caughtError.message : "Ocurrió un error inesperado al guardar el expediente.");
       setSaving(false);
     }
   }
@@ -227,7 +222,7 @@ export default function DiagnosticoPage() {
                   ))}
                 </ul>
                 <button className="button diagnostic-save-button" type="button" onClick={saveAsCase} disabled={saving}>
-                  {saving ? "Guardando…" : "Guardar en mi panel"}
+                  {saving ? "Guardando…" : "Guardar Diagnóstico y Crear Expediente"}
                 </button>
                 <p className="disclaimer">
                   La clasificación definitiva dependerá de la profesión española pretendida, el plan
