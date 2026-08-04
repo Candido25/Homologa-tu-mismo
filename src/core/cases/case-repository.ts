@@ -18,12 +18,15 @@ export type CaseStatus =
   | "resolved_unfavorable"
   | "closed";
 
+export type CaseTier = "FREE" | "PREMIUM";
+
 export type CaseSummary = {
   id: string;
   title: string;
   degreeName: string;
   procedureType: CaseProcedureType;
   status: CaseStatus;
+  tier: CaseTier;
   updatedAt: string;
 };
 
@@ -63,4 +66,5 @@ export interface CaseRepository {
   listRecentByUser(userId: string, limit: number): Promise<CaseSummary[]>;
   getByIdForUser(caseId: string, userId: string): Promise<CaseDetail | null>;
   create(input: CreateCaseInput): Promise<{ id: string }>;
+  updateTier(caseId: string, tier: CaseTier): Promise<void>;
 }
