@@ -292,6 +292,11 @@ export function DocumentManager({
                     <span className="text-xs text-muted block truncate">
                       {document.documentTypeName} · v{document.version} · {formatSize(document.sizeBytes)} · {formatDate(document.uploadedAt)}
                     </span>
+                    <small className="text-[10px] text-muted block mt-0.5">
+                      {document.retentionUntil
+                        ? `Se conserva hasta ${formatDate(document.retentionUntil)}`
+                        : "Sin vencimiento configurado"}
+                    </small>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end border-t sm:border-0 pt-3 sm:pt-0 border-line">
