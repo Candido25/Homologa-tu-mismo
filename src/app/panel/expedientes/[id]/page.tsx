@@ -100,128 +100,119 @@ export default async function CasePage({ params }: PageProps) {
     }
   }
 
+  const procedure = caseItem.procedureType;
+  const isHomologation = procedure === "homologation";
+  const checklist = isHomologation
+    ? ["Documento de identidad (Pasaporte/NIE)", "Título apostillado", "Certificado académico", "Acreditación de competencia lingüística", "Pago de tasas oficiales"]
+    : ["Documento de identidad", "Título universitario legalizado/apostillado", "Certificado de estudios", "Pago de tasas"];
+
   return (
-    <>
-      <section className="dashboard-header">
-        <div className="container case-detail-header">
+    <div className="bg-soft min-h-screen pb-12">
+      <section className="bg-surface border-b border-line py-8 shadow-sm">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <p className="eyebrow">Expediente privado</p>
-            <h1>{caseItem.degreeName}</h1>
-            <p>{result?.route || caseItem.title}</p>
+            <p className="text-accent font-bold text-sm uppercase tracking-wide mb-1">Expediente privado</p>
+            <h1 className="text-2xl font-bold text-ink mb-1">{caseItem.degreeName}</h1>
+            <p className="text-muted font-medium">{result?.route || caseItem.title}</p>
           </div>
-          <div className="case-header-actions">
-            <Link className="button" href="/diagnostico">
+          <div className="flex gap-3">
+            <Link className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded font-semibold transition" href="/diagnostico">
               Nuevo diagnóstico
             </Link>
-            <Link className="button button-secondary" href="/panel">
+            <Link className="px-4 py-2 bg-surface hover:bg-soft text-ink border border-line rounded font-semibold transition" href="/panel">
               Volver al panel
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="section dashboard-section">
-        <div className="container case-detail-layout">
-          <div className="case-detail-main">
-            <article className="detail-card detail-hero-card">
-              <div className="case-card-topline">
-                <span className="result-label">Orientación preliminar</span>
-                <small>Creado el {formatDate(caseItem.createdAt)}</small>
-              </div>
-              <h2>{result?.route || "Ruta por determinar"}</h2>
-              <p>{result?.explanation || "Este expediente todavía necesita completar su diagnóstico."}</p>
-              {result?.confidence ? (
-                <div className="confidence-meter compact-confidence">
-                  <span>Nivel de orientación</span>
-                  <strong>{result.confidence}</strong>
-                </div>
-              ) : null}
-            </article>
-
-            <article className="detail-card">
-              <h2>Próximos pasos recomendados</h2>
-              {Array.isArray(result?.nextSteps) && result.nextSteps.length > 0 ? (
-                <ol className="next-step-list">
-                  {result.nextSteps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-              ) : (
-                <p>Completa nuevamente el diagnóstico para generar una ruta inicial.</p>
-              )}
-              <p className="disclaimer">
-                Estas indicaciones son organizativas y no sustituyen la normativa ni la decisión de la autoridad.
-              </p>
-            </article>
-
-            {documentInterfaceEnabled && documentTypes.length > 0 ? (
-              <DocumentManager
-                caseId={id}
-                documentTypes={documentTypes}
-                initialDocuments={initialDocuments}
-              />
-            ) : (
-              <article className="detail-card">
-                <div className="panel-heading">
-                  <span className="result-label">Preparación</span>
-                  <h2>Checklist documental previsto</h2>
-                  <p>
-                    La carga permanece desactivada hasta configurar el entorno documental privado.
-                  </p>
-                </div>
-              </article>
-            )}
-          </div>
-
-          <aside className="case-detail-sidebar">
-            <article className="detail-card">
-              <h2>Resumen</h2>
-              <dl className="summary-list">
-                <div>
-                  <dt>Estado interno</dt>
-                  <dd>{statusLabels[caseItem.status] || caseItem.status}</dd>
-                </div>
-                <div>
-                  <dt>País de origen</dt>
-                  <dd>{payload.input?.countryName || caseItem.originCountryCode || "No indicado"}</dd>
-                </div>
-                <div>
-                  <dt>Objetivo</dt>
-                  <dd>{caseItem.objective}</dd>
-                </div>
-                <div>
-                  <dt>Última actualización</dt>
-                  <dd>{formatDate(caseItem.updatedAt)}</dd>
-                </div>
-              </dl>
-            </article>
-
-            <article className={`detail-card${documentInterfaceEnabled ? "" : " locked-feature"}`}>
-              <span className="result-label">
-                {documentInterfaceEnabled ? "Canal privado" : "Próxima fase"}
+      <section className="container mx-auto px-6 mt-8 flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 flex flex-col gap-6">
+          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
+            <div className="flex justify-between items-center mb-4">
+              <span className="bg-soft text-ink px-3 py-1 rounded text-sm font-semibold border border-line">
+                Orientación preliminar
               </span>
-              <h2>Archivos privados</h2>
-              <p>
-                {documentInterfaceEnabled
-                  ? "Carga local habilitada para archivos ficticios. El contenido nunca se publica mediante una URL abierta."
-                  : "La interfaz se habilitará cuando el almacenamiento privado esté configurado."}
+              <small className="text-muted">Creado el {formatDate(caseItem.createdAt)}</small>
+            </div>
+            <h2 className="text-xl font-bold text-ink mb-2">{result?.route || "Ruta por determinar"}</h2>
+            <p className="text-muted mb-4">{result?.explanation || "Este expediente todavía necesita completar su diagnóstico."}</p>
+            {result?.confidence ? (
+              <div className="inline-flex items-center gap-2 bg-blue/10 text-blue px-3 py-1 rounded-full text-sm font-semibold">
+                <span>Nivel de orientación:</span>
+                <strong>{result.confidence}</strong>
+              </div>
+            ) : null}
+          </article>
+
+          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
+            <h2 className="text-xl font-bold text-ink mb-4">Línea de Progreso</h2>
+            <div className="relative">
+              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-line">
+                <div style={{ width: initialDocuments.length > 0 ? "50%" : "25%" }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand transition-all duration-500"></div>
+              </div>
+              <ul className="flex justify-between text-xs font-semibold text-muted">
+                <li className="text-brand">Borrador</li>
+                <li className={initialDocuments.length > 0 ? "text-brand" : ""}>Documentos</li>
+                <li>Revisión</li>
+                <li>Presentación</li>
+              </ul>
+            </div>
+          </article>
+
+          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
+            <h2 className="text-xl font-bold text-ink mb-4">Checklist Dinámico ({procedure})</h2>
+            <ul className="space-y-2">
+              {checklist.map((item, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <input type="checkbox" className="w-4 h-4 text-brand bg-soft border-line rounded" disabled />
+                  <span className="text-ink font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          {documentInterfaceEnabled && documentTypes.length > 0 ? (
+            <DocumentManager
+              caseId={id}
+              documentTypes={documentTypes}
+              initialDocuments={initialDocuments}
+            />
+          ) : (
+            <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
+              <span className="bg-soft text-ink px-3 py-1 rounded text-sm font-semibold border border-line inline-block mb-3">Preparación</span>
+              <h2 className="text-xl font-bold text-ink mb-2">Checklist documental previsto</h2>
+              <p className="text-muted">
+                La carga permanece desactivada hasta configurar el entorno documental privado.
               </p>
             </article>
-
-            <article className="detail-card">
-              <h2>Línea de trabajo</h2>
-              <ol className="case-timeline">
-                <li className="is-complete">Diagnóstico creado</li>
-                <li className={initialDocuments.length > 0 ? "is-complete" : ""}>
-                  Documentos por organizar
-                </li>
-                <li>Revisión previa pendiente</li>
-                <li>Presentación oficial externa</li>
-              </ol>
-            </article>
-          </aside>
+          )}
         </div>
+
+        <aside className="w-full lg:w-80 flex flex-col gap-6">
+          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
+            <h2 className="text-xl font-bold text-ink mb-4">Resumen</h2>
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-sm font-semibold text-muted">Estado interno</dt>
+                <dd className="text-ink font-medium">{statusLabels[caseItem.status] || caseItem.status}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold text-muted">País de origen</dt>
+                <dd className="text-ink font-medium">{payload.input?.countryName || caseItem.originCountryCode || "No indicado"}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold text-muted">Objetivo</dt>
+                <dd className="text-ink font-medium">{caseItem.objective}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold text-muted">Última actualización</dt>
+                <dd className="text-ink font-medium">{formatDate(caseItem.updatedAt)}</dd>
+              </div>
+            </dl>
+          </article>
+        </aside>
       </section>
-    </>
+    </div>
   );
 }
