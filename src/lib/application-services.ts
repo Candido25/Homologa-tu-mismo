@@ -8,6 +8,7 @@ import { LocalTestCurrentUserProvider } from "@/adapters/identity/local-test-cur
 import { SupabaseCurrentUserProvider } from "@/adapters/identity/supabase-current-user";
 import { AzureBlobDocumentStorage } from "@/adapters/storage/azure-blob-document-storage";
 import { AzuriteDocumentStorage } from "@/adapters/storage/azurite-document-storage";
+import { SupabaseDocumentStorage } from "@/adapters/storage/supabase-document-storage";
 import type { CaseRepository } from "@/core/cases/case-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
 import type { DocumentRepository } from "@/core/documents/document-repository";
@@ -67,12 +68,18 @@ export function getDocumentStorage(): DocumentStorage {
     return new AzureBlobDocumentStorage();
   }
 
-  throw new Error("El adaptador heredado de Supabase Storage no está habilitado.");
+  if (provider === "supabase") {
+    if (!isSupabaseConfigured()) throw new Error("Supabase Storage no está configurado.");
+    return new SupabaseDocumentStorage();
+  }
+
+  throw new Error("Proveedor de almacenamiento desconocido.");
 }
 
 export function getDocumentRepository(): DocumentRepository {
-  if (getDatabaseProviderName() !== "postgres") {
-    throw new Error("La persistencia documental portable requiere PostgreSQL.");
+  // If we are using Supabase, we can use the same Postgres adapter, since it leverages `pg` logic
+  if (getDatabaseProviderName() !== "postgres" && getDatabaseProviderName() !== "supabase") {
+    throw new Error("La persistencia documental portable requiere PostgreSQL o Supabase.");
   }
   return new PostgresDocumentRepository();
 }
@@ -99,11 +106,12 @@ export function isDocumentFlowConfigured() {
 }
 
 export function isDocumentDataConfigured() {
-  if (getDatabaseProviderName() !== "postgres" || !isApplicationDataConfigured()) return false;
+  if (getDatabaseProviderName() !== "postgres" && getDatabaseProviderName() !== "supabase") return false;
 
   const storageProvider = getStorageProviderName();
   if (storageProvider === "azurite") return isAzuriteConfigured();
   if (storageProvider === "azure-blob") return isAzureBlobConfigured();
+  if (storageProvider === "supabase") return isSupabaseConfigured();
   return false;
 }
 
