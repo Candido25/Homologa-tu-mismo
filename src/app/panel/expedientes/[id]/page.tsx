@@ -12,7 +12,7 @@ import {
   isDocumentInterfaceEnabled,
   isPrivateAreaConfigured,
 } from "@/lib/application-services";
-import { DocumentManager } from "./document-manager";
+import { CaseViewClient } from "./case-view-client";
 
 export const metadata: Metadata = { title: "Mi expediente" };
 export const dynamic = "force-dynamic";
@@ -101,10 +101,6 @@ export default async function CasePage({ params }: PageProps) {
   }
 
   const procedure = caseItem.procedureType;
-  const isHomologation = procedure === "homologation";
-  const checklist = isHomologation
-    ? ["Documento de identidad (Pasaporte/NIE)", "Título apostillado", "Certificado académico", "Acreditación de competencia lingüística", "Pago de tasas oficiales"]
-    : ["Documento de identidad", "Título universitario legalizado/apostillado", "Certificado de estudios", "Pago de tasas"];
 
   return (
     <div className="bg-soft min-h-screen pb-12">
@@ -145,48 +141,14 @@ export default async function CasePage({ params }: PageProps) {
             ) : null}
           </article>
 
-          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-            <h2 className="text-xl font-bold text-ink mb-4">Línea de Progreso</h2>
-            <div className="relative">
-              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-line">
-                <div style={{ width: initialDocuments.length > 0 ? "50%" : "25%" }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand transition-all duration-500"></div>
-              </div>
-              <ul className="flex justify-between text-xs font-semibold text-muted">
-                <li className="text-brand">Borrador</li>
-                <li className={initialDocuments.length > 0 ? "text-brand" : ""}>Documentos</li>
-                <li>Revisión</li>
-                <li>Presentación</li>
-              </ul>
-            </div>
-          </article>
+          <CaseViewClient
+            caseId={id}
+            procedure={procedure}
+            initialDocuments={initialDocuments}
+            documentTypes={documentTypes}
+            documentInterfaceEnabled={documentInterfaceEnabled}
+          />
 
-          <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-            <h2 className="text-xl font-bold text-ink mb-4">Checklist Dinámico ({procedure})</h2>
-            <ul className="space-y-2">
-              {checklist.map((item, i) => (
-                <li key={i} className="flex items-center gap-2">
-                  <input type="checkbox" className="w-4 h-4 text-brand bg-soft border-line rounded" disabled />
-                  <span className="text-ink font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          {documentInterfaceEnabled && documentTypes.length > 0 ? (
-            <DocumentManager
-              caseId={id}
-              documentTypes={documentTypes}
-              initialDocuments={initialDocuments}
-            />
-          ) : (
-            <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-              <span className="bg-soft text-ink px-3 py-1 rounded text-sm font-semibold border border-line inline-block mb-3">Preparación</span>
-              <h2 className="text-xl font-bold text-ink mb-2">Checklist documental previsto</h2>
-              <p className="text-muted">
-                La carga permanece desactivada hasta configurar el entorno documental privado.
-              </p>
-            </article>
-          )}
         </div>
 
         <aside className="w-full lg:w-80 flex flex-col gap-6">

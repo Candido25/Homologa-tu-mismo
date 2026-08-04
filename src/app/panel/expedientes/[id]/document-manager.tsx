@@ -1,20 +1,17 @@
 "use client";
 
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useMemo, useRef, useState, useEffect } from "react";
 import type {
   DocumentSummary,
   DocumentType,
 } from "@/core/documents/document-repository";
-
-type UploadResponse = {
-  document?: DocumentSummary;
-  error?: string;
-};
+import { uploadCaseDocument, deleteCaseDocument, getCaseDocuments } from "./actions";
 
 type DocumentManagerProps = {
   caseId: string;
   documentTypes: DocumentType[];
   initialDocuments: DocumentSummary[];
+  onChange?: (documents: DocumentSummary[]) => void;
 };
 
 function formatSize(sizeBytes: number) {
@@ -44,6 +41,7 @@ export function DocumentManager({
   caseId,
   documentTypes,
   initialDocuments,
+  onChange,
 }: DocumentManagerProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [documents, setDocuments] = useState(initialDocuments);
@@ -54,6 +52,13 @@ export function DocumentManager({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  // Notify parent of changes to documents list
+  useEffect(() => {
+    if (onChange) {
+      onChange(documents);
+    }
+  }, [documents, onChange]);
 
   const sortedDocuments = useMemo(
     () =>
@@ -112,19 +117,21 @@ export function DocumentManager({
     body.set("archivo", selectedFile);
 
     try {
-      const response = await fetch(`/api/expedientes/${caseId}/documentos`, {
-        method: "POST",
-        body,
-      });
-      const data = (await response.json()) as UploadResponse;
-      if (!response.ok || !data.document) {
-        throw new Error(data.error || "No pudimos cargar el documento.");
+      const response = await uploadCaseDocument(caseId, body);
+
+      if (!response.success) {
+        if (response.code === "unauthenticated") {
+          window.location.assign(`/iniciar-sesion?siguiente=${encodeURIComponent(`/panel/expedientes/${caseId}`)}`);
+          return;
+        }
+        throw new Error(response.error);
       }
 
-      setDocuments((current) => [data.document!, ...current]);
+      const latestDocuments = await getCaseDocuments(caseId);
+      setDocuments(latestDocuments);
       setSelectedFile(null);
       setDocumentTypeCode("");
-      setMessage(`${data.document.documentTypeName} se guardó correctamente.`);
+      setMessage(`${response.document.documentTypeName} se guardó correctamente.`);
       formRef.current?.reset();
     } catch (caughtError) {
       setError(
@@ -141,16 +148,18 @@ export function DocumentManager({
     setMessage("");
 
     try {
-      const response = await fetch(
-        `/api/expedientes/${caseId}/documentos/${document.id}`,
-        { method: "DELETE" },
-      );
-      if (!response.ok) {
-        const data = (await response.json()) as UploadResponse;
-        throw new Error(data.error || "No pudimos eliminar el documento.");
+      const response = await deleteCaseDocument(caseId, document.id);
+
+      if (!response.success) {
+        if (response.code === "unauthenticated") {
+          window.location.assign(`/iniciar-sesion?siguiente=${encodeURIComponent(`/panel/expedientes/${caseId}`)}`);
+          return;
+        }
+        throw new Error(response.error);
       }
 
-      setDocuments((current) => current.filter((item) => item.id !== document.id));
+      const latestDocuments = await getCaseDocuments(caseId);
+      setDocuments(latestDocuments);
       setConfirmDeleteId(null);
       setMessage(`${document.originalFilename} se eliminó del expediente.`);
     } catch (caughtError) {
