@@ -11,10 +11,11 @@ type IdentityRow = {
   provider: string;
   issuer: string;
   subject: string;
+  role: "USER" | "ADVISOR" | "ADMIN";
 };
 
 const identitySql = [
-  "select u.id, i.email, p.display_name, i.provider, i.issuer, i.subject",
+  "select u.id, u.role, i.email, p.display_name, i.provider, i.issuer, i.subject",
   "from app_users u",
   "join external_identities i on i.user_id = u.id",
   "left join profiles p on p.id = u.id",
@@ -38,6 +39,7 @@ export class LocalTestCurrentUserProvider implements CurrentUserProvider {
       provider: row.provider,
       issuer: row.issuer,
       subject: row.subject,
+      role: row.role || "USER",
     };
   }
 }

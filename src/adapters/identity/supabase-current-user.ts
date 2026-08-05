@@ -20,6 +20,15 @@ export class SupabaseCurrentUserProvider implements CurrentUserProvider {
         ? user.user_metadata.full_name.trim()
         : null;
 
+    // Fetch the role from the public.app_users table
+    // Since RLS is a thing, make sure this select is allowed for the user themselves, or use a service role if needed
+    // Assuming the user can select their own record
+    const { data: dbUser } = await supabase
+      .from("app_users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
     return {
       id: user.id,
       email: user.email || null,
@@ -27,6 +36,7 @@ export class SupabaseCurrentUserProvider implements CurrentUserProvider {
       provider: "supabase",
       issuer: getPublicSupabaseConfig().url,
       subject: user.id,
+      role: dbUser?.role || "USER",
     };
   }
 }

@@ -21,7 +21,7 @@ const STAGES: { value: CaseStage; label: string; action: string }[] = [
 ];
 
 export function TimelineClient({ caseId, currentStage, initialTimeline }: TimelineClientProps) {
-  const [timeline, setTimeline] = useState<CaseActivityLog[]>(initialTimeline);
+  const [timeline] = useState<CaseActivityLog[]>(initialTimeline);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [newNote, setNewNote] = useState("");
