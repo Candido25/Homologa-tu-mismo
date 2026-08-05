@@ -9,12 +9,10 @@ import { SupabaseCurrentUserProvider } from "@/adapters/identity/supabase-curren
 import { AzureBlobDocumentStorage } from "@/adapters/storage/azure-blob-document-storage";
 import { AzuriteDocumentStorage } from "@/adapters/storage/azurite-document-storage";
 import { SupabaseDocumentStorage } from "@/adapters/storage/supabase-document-storage";
-import { PolarPaymentAdapter } from "@/adapters/monetization/polar-payment-adapter";
 import type { CaseRepository } from "@/core/cases/case-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
 import type { DocumentRepository } from "@/core/documents/document-repository";
 import type { DocumentStorage } from "@/core/storage/document-storage";
-import type { PaymentProvider } from "@/core/monetization/payment-provider";
 import { DocumentRetentionService } from "@/modules/documents/document-retention-service";
 import { DocumentService } from "@/modules/documents/document-service";
 import {
@@ -97,10 +95,6 @@ export function getDocumentService() {
 
 export function getDocumentRetentionService() {
   return new DocumentRetentionService(getDocumentRepository(), getDocumentStorage());
-}
-
-export function getPaymentProvider(): PaymentProvider {
-  return new PolarPaymentAdapter();
 }
 
 export function isPrivateAreaConfigured() {

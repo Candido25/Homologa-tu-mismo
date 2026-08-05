@@ -10,8 +10,6 @@ import {
   getCurrentUserProvider,
   getDocumentService,
   isDocumentFlowConfigured,
-  getPaymentProvider,
-  getCaseRepository,
 } from "@/lib/application-services";
 import type { DocumentSummary } from "@/core/documents/document-repository";
 
@@ -130,32 +128,5 @@ export async function getCaseDocuments(caseId: string): Promise<DocumentSummary[
       message: error instanceof Error ? error.message : "unknown",
     });
     return [];
-  }
-}
-
-export async function createPolarCheckout(caseId: string): Promise<{ success: true; url: string } | { success: false; error: string }> {
-  const user = await getCurrentUserProvider().getCurrentUser();
-  if (!user) {
-    return { success: false, error: "Debes iniciar sesión." };
-  }
-
-  try {
-    // Verify the user owns this case before proceeding to checkout
-    const caseItem = await getCaseRepository().getByIdForUser(caseId, user.id);
-    if (!caseItem) {
-      return { success: false, error: "Expediente no encontrado." };
-    }
-
-    const provider = getPaymentProvider();
-    const url = await provider.createCheckoutSession(user.id, caseId);
-
-    if (!url) {
-      return { success: false, error: "No se pudo generar la sesión de pago." };
-    }
-
-    return { success: true, url };
-  } catch (error) {
-    console.error("polar_checkout_generation_failed", error);
-    return { success: false, error: "Ocurrió un error al intentar crear el checkout." };
   }
 }

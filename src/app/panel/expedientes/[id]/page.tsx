@@ -13,7 +13,8 @@ import {
   isPrivateAreaConfigured,
 } from "@/lib/application-services";
 import { CaseViewClient } from "./case-view-client";
-import { PremiumCard } from "./premium-card";
+import { TimelineClient } from "./timeline-client";
+import { getCaseTimelineAction } from "./timeline-actions";
 
 export const metadata: Metadata = { title: "Mi expediente" };
 export const dynamic = "force-dynamic";
@@ -102,6 +103,8 @@ export default async function CasePage({ params }: PageProps) {
   }
 
   const procedure = caseItem.procedureType;
+  const currentStage = caseItem.currentStage;
+  const timeline = await getCaseTimelineAction(id);
 
   return (
     <div className="bg-soft min-h-screen pb-12">
@@ -150,11 +153,15 @@ export default async function CasePage({ params }: PageProps) {
             documentInterfaceEnabled={documentInterfaceEnabled}
           />
 
+          <TimelineClient
+            caseId={id}
+            currentStage={currentStage}
+            initialTimeline={timeline}
+          />
+
         </div>
 
         <aside className="w-full lg:w-80 flex flex-col gap-6">
-          <PremiumCard caseId={id} isPremium={caseItem.tier === "PREMIUM"} />
-
           <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
             <h2 className="text-xl font-bold text-ink mb-4">Resumen</h2>
             <dl className="space-y-4">
