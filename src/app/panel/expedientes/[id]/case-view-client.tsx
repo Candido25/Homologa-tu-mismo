@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { DocumentSummary, DocumentType } from "@/core/documents/document-repository";
 import { DocumentManager } from "./document-manager";
-import { ChecklistClient } from "./checklist-client";
+import { RequirementsClient } from "./requirements-client";
 
 type CaseViewClientProps = {
   caseId: string;
@@ -47,8 +47,8 @@ export function CaseViewClient({
       </article>
 
       <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-        <h2 className="text-xl font-bold text-ink mb-4">Checklist Dinámico ({procedure})</h2>
-        <ChecklistClient procedure={procedure} documents={documents} />
+        <h2 className="text-xl font-bold text-ink mb-4">Requisitos y Plazos ({procedure})</h2>
+        <RequirementsClient procedure={procedure} documents={documents} />
       </article>
 
       {documentInterfaceEnabled && documentTypes.length > 0 ? (
