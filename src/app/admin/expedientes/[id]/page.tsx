@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   getAdminCaseRepository,
-  getDocumentService,
 } from "@/lib/application-services";
 
 export const metadata: Metadata = { title: "Revisión de Expediente" };
