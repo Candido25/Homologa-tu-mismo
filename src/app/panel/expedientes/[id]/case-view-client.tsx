@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DocumentSummary, DocumentType } from "@/core/documents/document-repository";
+import type { CaseRequirement } from "@/core/cases/requirement-repository";
 import { DocumentManager } from "./document-manager";
 import { RequirementsClient } from "./requirements-client";
 
@@ -10,6 +11,7 @@ type CaseViewClientProps = {
   procedure: string;
   initialDocuments: DocumentSummary[];
   documentTypes: DocumentType[];
+  requirements: CaseRequirement[];
   documentInterfaceEnabled: boolean;
 };
 
@@ -18,6 +20,7 @@ export function CaseViewClient({
   procedure,
   initialDocuments,
   documentTypes,
+  requirements,
   documentInterfaceEnabled,
 }: CaseViewClientProps) {
   const [documents, setDocuments] = useState<DocumentSummary[]>(initialDocuments);
@@ -48,7 +51,7 @@ export function CaseViewClient({
 
       <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
         <h2 className="text-xl font-bold text-ink mb-4">Requisitos y Plazos ({procedure})</h2>
-        <RequirementsClient procedure={procedure} documents={documents} />
+        <RequirementsClient caseId={caseId} procedure={procedure} documents={documents} requirements={requirements} />
       </article>
 
       {documentInterfaceEnabled && documentTypes.length > 0 ? (

@@ -5,10 +5,12 @@ import type {
   DocumentSummary,
   DocumentType,
 } from "@/core/documents/document-repository";
+import type { CaseRequirement } from "@/core/cases/requirement-repository";
 import {
   getCaseRepository,
   getCurrentUserProvider,
   getDocumentService,
+  getRequirementRepository,
   isDocumentInterfaceEnabled,
   isPrivateAreaConfigured,
 } from "@/lib/application-services";
@@ -86,13 +88,16 @@ export default async function CasePage({ params }: PageProps) {
   const documentInterfaceEnabled = isDocumentInterfaceEnabled();
   let initialDocuments: DocumentSummary[] = [];
   let documentTypes: DocumentType[] = [];
+  let requirements: CaseRequirement[] = [];
 
   if (documentInterfaceEnabled) {
     try {
       const documents = getDocumentService();
-      [initialDocuments, documentTypes] = await Promise.all([
+      const requirementsRepo = getRequirementRepository();
+      [initialDocuments, documentTypes, requirements] = await Promise.all([
         documents.list(id, user.id).then((items) => items || []),
         documents.listTypes(),
+        requirementsRepo.listByCaseForUser(id, user.id),
       ]);
     } catch (error) {
       console.error("document_interface_load_failed", {
@@ -150,6 +155,7 @@ export default async function CasePage({ params }: PageProps) {
             procedure={procedure}
             initialDocuments={initialDocuments}
             documentTypes={documentTypes}
+            requirements={requirements}
             documentInterfaceEnabled={documentInterfaceEnabled}
           />
 

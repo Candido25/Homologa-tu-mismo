@@ -4,6 +4,8 @@ import { PostgresCaseRepository } from "@/adapters/cases/postgres-case-repositor
 import { SupabaseCaseRepository } from "@/adapters/cases/supabase-case-repository";
 import { PostgresAdminRepository } from "@/adapters/cases/postgres-admin-repository";
 import { SupabaseAdminRepository } from "@/adapters/cases/supabase-admin-repository";
+import { PostgresRequirementRepository } from "@/adapters/cases/postgres-requirement-repository";
+import { SupabaseRequirementRepository } from "@/adapters/cases/supabase-requirement-repository";
 import { PostgresDocumentRepository } from "@/adapters/documents/postgres-document-repository";
 import { EntraCurrentUserProvider } from "@/adapters/identity/entra-current-user";
 import { LocalTestCurrentUserProvider } from "@/adapters/identity/local-test-current-user";
@@ -13,6 +15,7 @@ import { AzuriteDocumentStorage } from "@/adapters/storage/azurite-document-stor
 import { SupabaseDocumentStorage } from "@/adapters/storage/supabase-document-storage";
 import type { CaseRepository } from "@/core/cases/case-repository";
 import type { AdminCaseRepository } from "@/core/cases/admin-repository";
+import type { RequirementRepository } from "@/core/cases/requirement-repository";
 import type { CurrentUserProvider } from "@/core/identity/current-user";
 import type { DocumentRepository } from "@/core/documents/document-repository";
 import type { DocumentStorage } from "@/core/storage/document-storage";
@@ -61,6 +64,11 @@ export function getCaseRepository(): CaseRepository {
 export function getAdminCaseRepository(): AdminCaseRepository {
   const provider = getDatabaseProviderName();
   return provider === "postgres" ? new PostgresAdminRepository() : new SupabaseAdminRepository();
+}
+
+export function getRequirementRepository(): RequirementRepository {
+  const provider = getDatabaseProviderName();
+  return provider === "postgres" ? new PostgresRequirementRepository() : new SupabaseRequirementRepository();
 }
 
 export function getDocumentStorage(): DocumentStorage {
