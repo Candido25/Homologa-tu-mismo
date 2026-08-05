@@ -11,7 +11,13 @@ export type AdminCaseDetail = CaseDetail & {
   userEmail: string | null;
 };
 
+export type AdminCaseFilters = {
+  status?: string;
+  tier?: string;
+  query?: string;
+};
+
 export interface AdminCaseRepository {
-  listAllCases(limit: number): Promise<AdminCaseSummary[]>;
+  listAllCases(limit: number, filters?: AdminCaseFilters): Promise<AdminCaseSummary[]>;
   getById(caseId: string): Promise<AdminCaseDetail | null>;
 }

@@ -1,37 +1,8 @@
 import "server-only";
 
-import type { AdminCaseDetail, AdminCaseSummary, AdminCaseRepository } from "@/core/cases/admin-repository";
+import type { AdminCaseDetail, AdminCaseSummary, AdminCaseRepository, AdminCaseFilters } from "@/core/cases/admin-repository";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { CaseProcedureType, CaseStatus, CaseTier, CaseStage, CaseDetail } from "@/core/cases/case-repository";
-
-type SupabaseAdminCaseRow = {
-  id: string;
-  user_id: string;
-  title: string;
-  degree_name: string;
-  origin_country_code: string | null;
-  institution_name: string | null;
-  profession_code: string | null;
-  objective: CaseDetail["objective"];
-  procedure_type: CaseProcedureType;
-  status: CaseStatus;
-  tier: CaseTier;
-  current_stage: CaseStage;
-  diagnostic_version: string | null;
-  diagnostic_payload: unknown;
-  official_case_number: string | null;
-  submitted_at: string | null;
-  created_at: string;
-  updated_at: string;
-  app_users: {
-    profiles: {
-      display_name: string | null;
-    }[];
-    external_identities: {
-      email: string | null;
-    }[];
-  } | null;
-};
 
 export class SupabaseAdminRepository implements AdminCaseRepository {
   private getClient() {
@@ -45,17 +16,31 @@ export class SupabaseAdminRepository implements AdminCaseRepository {
     return createServiceClient(supabaseUrl, supabaseServiceKey);
   }
 
-  async listAllCases(limit: number): Promise<AdminCaseSummary[]> {
+  async listAllCases(limit: number, filters?: AdminCaseFilters): Promise<AdminCaseSummary[]> {
     const supabase = this.getClient();
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("cases")
       .select(`
         id, title, degree_name, procedure_type, status, tier, current_stage, updated_at, user_id
       `)
       .order("updated_at", { ascending: false })
       .limit(safeLimit);
+
+    if (filters?.status) {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.tier) {
+      query = query.eq("tier", filters.tier);
+    }
+    if (filters?.query) {
+      // NOTE: supabase RPC or complex text search across multiple joined tables
+      // might be required for full query functionality.
+      query = query.or(`title.ilike.%${filters.query}%,degree_name.ilike.%${filters.query}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(`No se pudieron leer los expedientes: ${error.message}`);
 
@@ -91,27 +76,27 @@ export class SupabaseAdminRepository implements AdminCaseRepository {
     if (error) throw new Error(`No se pudo leer el expediente: ${error.message}`);
     if (!data) return null;
 
-    const row = data as SupabaseAdminCaseRow;
+    const row = data as Record<string, unknown>;
 
     return {
-      id: row.id,
-      title: row.title,
-      degreeName: row.degree_name,
-      procedureType: row.procedure_type,
-      status: row.status,
-      tier: row.tier || "FREE",
-      currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
-      updatedAt: row.updated_at,
-      userId: row.user_id,
-      originCountryCode: row.origin_country_code,
-      institutionName: row.institution_name,
-      professionCode: row.profession_code,
-      objective: row.objective,
-      diagnosticVersion: row.diagnostic_version,
+      id: String(row.id),
+      title: String(row.title),
+      degreeName: String(row.degree_name),
+      procedureType: row.procedure_type as CaseProcedureType,
+      status: row.status as CaseStatus,
+      tier: (row.tier as CaseTier) || "FREE",
+      currentStage: (row.current_stage as CaseStage) || "PREPARACION_DOCUMENTAL",
+      updatedAt: String(row.updated_at),
+      userId: String(row.user_id),
+      originCountryCode: row.origin_country_code ? String(row.origin_country_code) : null,
+      institutionName: row.institution_name ? String(row.institution_name) : null,
+      professionCode: row.profession_code ? String(row.profession_code) : null,
+      objective: row.objective as CaseDetail["objective"],
+      diagnosticVersion: row.diagnostic_version ? String(row.diagnostic_version) : null,
       diagnosticPayload: row.diagnostic_payload,
-      officialCaseNumber: row.official_case_number,
-      submittedAt: row.submitted_at,
-      createdAt: row.created_at,
+      officialCaseNumber: row.official_case_number ? String(row.official_case_number) : null,
+      submittedAt: row.submitted_at ? String(row.submitted_at) : null,
+      createdAt: String(row.created_at),
       userName: "Usuario",
       userEmail: "usuario@example.com",
     };

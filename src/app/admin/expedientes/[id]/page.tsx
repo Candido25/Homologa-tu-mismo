@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { DocumentSummary } from "@/core/documents/document-repository";
+import type { CaseRequirement } from "@/core/cases/requirement-repository";
 import {
   getAdminCaseRepository,
+  getDocumentService,
+  getRequirementRepository,
+  getCaseRepository,
 } from "@/lib/application-services";
+import type { CaseActivityLog } from "@/core/cases/case-repository";
+import { AdminDocumentReview } from "./admin-document-review";
+import { AdminTimelineManager } from "./admin-timeline-manager";
 
 export const metadata: Metadata = { title: "Revisión de Expediente" };
 export const dynamic = "force-dynamic";
@@ -24,8 +32,21 @@ export default async function AdminCaseViewPage({ params }: PageProps) {
   const { id } = await params;
 
   let caseItem;
+  let documents: DocumentSummary[] = [];
+  let requirements: CaseRequirement[] = [];
+  let timeline: CaseActivityLog[] = [];
+
   try {
     caseItem = await getAdminCaseRepository().getById(id);
+
+    if (caseItem) {
+      // In a pure multi-tenant setup, an admin might need a specialized service to bypass RLS.
+      // Assuming getDocumentService() / list / getTimeline are configured for admin access in production.
+      // For this test, we load them relying on the user ID of the case.
+      documents = await getDocumentService().list(id, caseItem.userId) || [];
+      requirements = await getRequirementRepository().listByCaseForUser(id, caseItem.userId);
+      timeline = await getCaseRepository().getTimeline(id, caseItem.userId);
+    }
   } catch (error) {
     console.error("admin_case_read_failed", {
       message: error instanceof Error ? error.message : "unknown",
@@ -52,23 +73,23 @@ export default async function AdminCaseViewPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-            <h2 className="text-xl font-bold text-ink mb-4">Documentos Subidos</h2>
-            <p className="text-muted text-sm mb-4">
-              En una implementación completa, aquí se listarían los documentos subidos por el usuario, permitiendo al asesor marcarlos como APROBADO o REQUIERE SUBSANACIÓN.
-            </p>
-            <div className="p-4 bg-soft border border-dashed border-line rounded text-center">
-              Módulo de revisión documental en desarrollo.
-            </div>
+            <h2 className="text-xl font-bold text-ink mb-4">Revisión Documental</h2>
+            <AdminDocumentReview
+              caseId={id}
+              userId={caseItem.userId}
+              documents={documents}
+              requirements={requirements}
+            />
           </article>
 
           <article className="bg-surface p-6 rounded-lg shadow-sm border border-line">
-            <h2 className="text-xl font-bold text-ink mb-4">Bitácora y Cambios de Etapa</h2>
-            <p className="text-muted text-sm mb-4">
-              Desde aquí el asesor podrá cambiar la etapa oficial del expediente (ej. pasar a EN REVISION MINISTERIO) y añadir notas a la bitácora del usuario.
-            </p>
-            <div className="p-4 bg-soft border border-dashed border-line rounded text-center">
-              Módulo de bitácora administrativa en desarrollo.
-            </div>
+            <h2 className="text-xl font-bold text-ink mb-4">Bitácora y Etapa Oficial</h2>
+            <AdminTimelineManager
+              caseId={id}
+              userId={caseItem.userId}
+              currentStage={caseItem.currentStage}
+              timeline={timeline}
+            />
           </article>
         </div>
 

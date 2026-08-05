@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AdminCaseDetail, AdminCaseSummary, AdminCaseRepository } from "@/core/cases/admin-repository";
+import type { AdminCaseDetail, AdminCaseSummary, AdminCaseRepository, AdminCaseFilters } from "@/core/cases/admin-repository";
 import type { CaseProcedureType, CaseStatus, CaseTier, CaseStage, CaseDetail } from "@/core/cases/case-repository";
 import { query } from "@/lib/postgres/pool";
 
@@ -36,19 +36,41 @@ function optionalIso(value: Date | string | null) {
 }
 
 export class PostgresAdminRepository implements AdminCaseRepository {
-  async listAllCases(limit: number): Promise<AdminCaseSummary[]> {
+  async listAllCases(limit: number, filters?: AdminCaseFilters): Promise<AdminCaseSummary[]> {
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
-    const result = await query<AdminCaseRow>(
-      [
-        "select c.id, c.user_id, c.title, c.degree_name, c.procedure_type, c.status, c.tier, c.current_stage, c.updated_at, p.display_name, i.email",
-        "from cases c",
-        "left join profiles p on p.id = c.user_id",
-        "left join external_identities i on i.user_id = c.user_id",
-        "order by c.updated_at desc",
-        "limit $1",
-      ].join(" "),
-      [safeLimit],
-    );
+
+    let sql = `
+      select c.id, c.user_id, c.title, c.degree_name, c.procedure_type, c.status, c.tier, c.current_stage, c.updated_at, p.display_name, i.email
+      from cases c
+      left join profiles p on p.id = c.user_id
+      left join external_identities i on i.user_id = c.user_id
+      where 1=1
+    `;
+    const params: (string | number)[] = [];
+    let paramIndex = 1;
+
+    if (filters?.status) {
+      sql += ` and c.status = $${paramIndex}`;
+      params.push(filters.status);
+      paramIndex++;
+    }
+
+    if (filters?.tier) {
+      sql += ` and c.tier = $${paramIndex}`;
+      params.push(filters.tier);
+      paramIndex++;
+    }
+
+    if (filters?.query) {
+      sql += ` and (p.display_name ilike $${paramIndex} or i.email ilike $${paramIndex} or c.title ilike $${paramIndex})`;
+      params.push(`%${filters.query}%`);
+      paramIndex++;
+    }
+
+    sql += ` order by c.updated_at desc limit $${paramIndex}`;
+    params.push(safeLimit);
+
+    const result = await query<AdminCaseRow>(sql, params);
 
     return result.rows.map((row) => ({
       id: row.id,

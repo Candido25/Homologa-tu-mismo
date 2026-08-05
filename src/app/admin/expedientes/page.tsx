@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAdminCaseRepository } from "@/lib/application-services";
+import { AdminFilters } from "./admin-filters";
 
 export const metadata: Metadata = { title: "Panel de Administración" };
 export const dynamic = "force-dynamic";
+
+type PageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es", {
@@ -13,8 +18,19 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export default async function AdminDashboardPage() {
-  const cases = await getAdminCaseRepository().listAllCases(50);
+export default async function AdminDashboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const status = typeof params.status === "string" ? params.status : undefined;
+  const tier = typeof params.tier === "string" ? params.tier : undefined;
+  const query = typeof params.query === "string" ? params.query : undefined;
+
+  const filters = {
+    status,
+    tier,
+    query,
+  };
+
+  const cases = await getAdminCaseRepository().listAllCases(50, filters);
 
   return (
     <div className="container mx-auto px-6 pb-12">
@@ -24,9 +40,9 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="bg-surface rounded-lg shadow-sm border border-line overflow-hidden">
-        <div className="p-4 border-b border-line bg-soft/50 flex justify-between items-center">
-          <h2 className="font-semibold text-ink">Expedientes Recientes ({cases.length})</h2>
-          {/* Future implementation: Add filters here */}
+        <div className="p-4 border-b border-line bg-soft/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h2 className="font-semibold text-ink whitespace-nowrap">Expedientes Recientes ({cases.length})</h2>
+          <AdminFilters />
         </div>
 
         <div className="overflow-x-auto">
