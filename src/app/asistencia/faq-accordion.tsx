@@ -76,6 +76,8 @@ export function FAQAccordion() {
                 <div key={itemIdx} className="flex flex-col">
                   <button
                     onClick={() => toggle(id)}
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-answer-${id}`}
                     className="flex justify-between items-center w-full px-5 py-4 text-left hover:bg-soft/50 transition-colors focus:outline-none focus:bg-soft/50"
                   >
                     <span className="font-medium text-ink">{item.question}</span>
@@ -84,11 +86,15 @@ export function FAQAccordion() {
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   <div
+                    id={`faq-answer-${id}`}
+                    role="region"
+                    aria-labelledby={`faq-question-${id}`}
                     className={`px-5 overflow-hidden transition-all duration-300 ease-in-out ${
                       isOpen ? "max-h-96 py-4 opacity-100 border-t border-line" : "max-h-0 py-0 opacity-0"
                     }`}

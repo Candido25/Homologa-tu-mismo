@@ -6,11 +6,25 @@ import "./expedientes.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Homologa Tú Mismo",
+    default: "Homologa Tú Mismo | Guía para Homologación de Títulos en España",
     template: "%s | Homologa Tú Mismo",
   },
   description:
-    "Tu título, tu trámite, nuestra guía. Prepara tu expediente de homologación en España paso a paso.",
+    "Guía definitiva para la homologación de títulos y validación de estudios universitarios extranjeros en España. Prepara tu expediente paso a paso.",
+  keywords: ["homologación de títulos en España", "validación de estudios extranjeros", "equivalencia de título universitario", "trabajar en España", "estudiar en España", "Apostilla de la Haya", "traducción jurada"],
+  openGraph: {
+    title: "Homologa Tú Mismo | Homologación de Títulos en España",
+    description: "Tu título, tu trámite, nuestra guía. Prepara tu expediente de homologación en España de forma segura y paso a paso.",
+    url: "https://homologatumismo.com",
+    siteName: "Homologa Tú Mismo",
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Homologa Tú Mismo | Homologación de Títulos en España",
+    description: "Guía para la homologación de títulos y validación de estudios universitarios extranjeros en España. Prepara tu expediente.",
+  },
 };
 
 export default function RootLayout({

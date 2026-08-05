@@ -3,8 +3,12 @@ import { FAQAccordion } from "./faq-accordion";
 import { ChatAssistant } from "./chat-assistant";
 
 export const metadata: Metadata = {
-  title: "Asistencia y Preguntas Frecuentes",
-  description: "Resuelve tus dudas sobre los trámites de homologación y equivalencia en España.",
+  title: "Asistencia y Preguntas Frecuentes - Homologación de Títulos",
+  description: "Encuentra respuestas a dudas frecuentes sobre requisitos, tiempos de espera, apostillas y traducciones para homologar y validar tu título en España.",
+  openGraph: {
+    title: "Asistencia y FAQ | Homologa Tú Mismo",
+    description: "Resuelve tus dudas sobre la homologación de títulos extranjeros en España con nuestro asistente virtual y preguntas frecuentes.",
+  }
 };
 
 export default function AsistenciaPage() {

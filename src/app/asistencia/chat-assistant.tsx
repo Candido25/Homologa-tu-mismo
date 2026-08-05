@@ -93,7 +93,7 @@ export function ChatAssistant() {
         </div>
       </div>
 
-      <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-soft/30">
+      <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-soft/30" role="log" aria-live="polite">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
@@ -108,11 +108,11 @@ export function ChatAssistant() {
           </div>
         ))}
         {isTyping && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" aria-label="El asistente está escribiendo...">
             <div className="bg-white border border-line rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex gap-1 items-center h-[44px]">
-              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce [animation-delay:-0.3s]" aria-hidden="true"></div>
+              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce [animation-delay:-0.15s]" aria-hidden="true"></div>
+              <div className="w-2 h-2 bg-muted/50 rounded-full animate-bounce" aria-hidden="true"></div>
             </div>
           </div>
         )}

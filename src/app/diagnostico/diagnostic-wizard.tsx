@@ -98,7 +98,7 @@ export function DiagnosticWizard() {
   return (
     <div className="max-w-2xl mx-auto bg-surface rounded-lg shadow-sm border border-line overflow-hidden mt-8">
       {/* Progress Bar */}
-      <div className="bg-soft flex">
+      <div className="bg-soft flex" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={4}>
         {[1, 2, 3, 4].map((s) => (
           <div
             key={s}
