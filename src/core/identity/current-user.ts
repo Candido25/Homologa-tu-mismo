@@ -1,3 +1,5 @@
+export type UserRole = "USER" | "ADVISOR" | "ADMIN";
+
 export type AuthenticatedUser = {
   /** Identificador interno de Homologa Tú Mismo, no el subject del proveedor. */
   id: string;
@@ -6,6 +8,7 @@ export type AuthenticatedUser = {
   provider: string;
   issuer: string;
   subject: string;
+  role: UserRole;
 };
 
 /**
