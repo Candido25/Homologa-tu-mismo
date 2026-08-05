@@ -1,4 +1,4 @@
-export const DIAGNOSTIC_VERSION = "prototype-2026-07-28";
+export const DIAGNOSTIC_VERSION = "prototype-2026-08-05";
 
 export const COUNTRY_OPTIONS = [
   { code: "PE", name: "Perú" },
@@ -14,12 +14,14 @@ export const COUNTRY_OPTIONS = [
 
 export type DiagnosticObjective = "work" | "study" | "academic" | "unknown";
 export type ProcedureType = "homologation" | "equivalence" | "validation" | "undetermined";
+export type DocumentStatusType = "ready" | "missing_apostille" | "missing_documents" | "unknown";
 
 export type DiagnosticInput = {
   country: string;
   countryName: string;
   degree: string;
   objective: DiagnosticObjective;
+  documentStatus: DocumentStatusType;
 };
 
 export type DiagnosticResult = {
@@ -52,6 +54,7 @@ const regulatedTerms = [
 ];
 
 const objectiveValues = new Set<DiagnosticObjective>(["work", "study", "academic", "unknown"]);
+const documentStatusValues = new Set<DocumentStatusType>(["ready", "missing_apostille", "missing_documents", "unknown"]);
 
 function resolveCountry(value: string) {
   const normalized = value.trim();
@@ -73,10 +76,16 @@ export function parseDiagnosticInput(body: unknown):
   const countryValue = typeof values.country === "string" ? values.country.trim() : "";
   const degree = typeof values.degree === "string" ? values.degree.trim().replace(/\s+/g, " ") : "";
   const objectiveValue = typeof values.objective === "string" ? values.objective : "";
+  const documentStatusValue = typeof values.documentStatus === "string" ? values.documentStatus : "unknown";
+
   const country = resolveCountry(countryValue);
 
   if (!country || degree.length < 3 || degree.length > 180 || !objectiveValues.has(objectiveValue as DiagnosticObjective)) {
     return { ok: false, error: "Completa correctamente el país, el título y el objetivo principal." };
+  }
+
+  if (!documentStatusValues.has(documentStatusValue as DocumentStatusType)) {
+     return { ok: false, error: "El estado de los documentos no es válido." };
   }
 
   return {
@@ -86,6 +95,7 @@ export function parseDiagnosticInput(body: unknown):
       countryName: country.name,
       degree,
       objective: objectiveValue as DiagnosticObjective,
+      documentStatus: documentStatusValue as DocumentStatusType,
     },
   };
 }
@@ -93,6 +103,12 @@ export function parseDiagnosticInput(body: unknown):
 export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
   const normalizedDegree = input.degree.toLocaleLowerCase("es");
   const appearsRegulated = regulatedTerms.some((term) => normalizedDegree.includes(term));
+
+  const docStep = input.documentStatus === 'ready'
+    ? "Comenzar a escanear los documentos para subirlos a la plataforma."
+    : input.documentStatus === 'missing_apostille'
+      ? "Tramitar la apostilla de la Haya en tu país de origen."
+      : "Reunir título, certificado académico y documentos de identidad.";
 
   if (input.objective === "study") {
     return {
@@ -102,7 +118,7 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
       explanation: `Si estudiaste ${input.degree} en ${input.countryName} y quieres continuar estudios en España, normalmente la universidad española analiza qué asignaturas o créditos puede reconocerte.`,
       nextSteps: [
         "Elegir la universidad y el programa español de destino.",
-        "Solicitar certificado académico y contenidos de las asignaturas.",
+        docStep,
         "Revisar los requisitos particulares de la universidad receptora.",
       ],
       version: DIAGNOSTIC_VERSION,
@@ -117,7 +133,7 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
       explanation: `Tu objetivo parece ser acreditar en España el nivel académico de ${input.degree}, sin vincularlo todavía al ejercicio de una profesión regulada.`,
       nextSteps: [
         "Confirmar si la profesión que deseas ejercer está regulada en España.",
-        "Reunir título, certificado académico y documentación legalizada.",
+        docStep,
         "Comparar tu objetivo con los efectos jurídicos de la equivalencia.",
       ],
       version: DIAGNOSTIC_VERSION,
@@ -133,7 +149,7 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
       nextSteps: [
         "Identificar la profesión regulada española de referencia.",
         "Revisar si el certificado académico incluye duración, asignaturas y carga horaria.",
-        "Comprobar apostilla, identidad y demás documentos obligatorios.",
+        docStep,
       ],
       version: DIAGNOSTIC_VERSION,
     };
@@ -147,7 +163,7 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
     nextSteps: [
       "Indicar el puesto o profesión que deseas ejercer en España.",
       "Comprobar si esa profesión está regulada.",
-      "Revisar el plan de estudios antes de elegir el procedimiento.",
+      docStep,
     ],
     version: DIAGNOSTIC_VERSION,
   };
