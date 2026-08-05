@@ -18,12 +18,25 @@ export type CaseStatus =
   | "resolved_unfavorable"
   | "closed";
 
+export type CaseTier = "FREE" | "PREMIUM";
+
+export type CaseStage =
+  | "PREPARACION_DOCUMENTAL"
+  | "APOSTILLA_Y_LEGALIZACION"
+  | "PAGO_TASA_790_070"
+  | "PRESENTACION_SEDE_ELECTRONICA"
+  | "EN_REVISION_MINISTERIO"
+  | "SUBSANACION_REQUERIDA"
+  | "RESOLUCION_OFICIAL";
+
 export type CaseSummary = {
   id: string;
   title: string;
   degreeName: string;
   procedureType: CaseProcedureType;
   status: CaseStatus;
+  tier: CaseTier;
+  currentStage: CaseStage;
   updatedAt: string;
 };
 
@@ -53,6 +66,14 @@ export type CreateCaseInput = {
   diagnosticPayload: unknown;
 };
 
+export type CaseActivityLog = {
+  id: string;
+  caseId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+};
+
 /**
  * Contrato de persistencia de expedientes.
  *
@@ -63,4 +84,8 @@ export interface CaseRepository {
   listRecentByUser(userId: string, limit: number): Promise<CaseSummary[]>;
   getByIdForUser(caseId: string, userId: string): Promise<CaseDetail | null>;
   create(input: CreateCaseInput): Promise<{ id: string }>;
+  updateTier(caseId: string, tier: CaseTier): Promise<void>;
+  updateStage(caseId: string, userId: string, newStage: CaseStage, note?: string): Promise<void>;
+  addLogEntry(caseId: string, userId: string, title: string, description: string): Promise<void>;
+  getTimeline(caseId: string, userId: string): Promise<CaseActivityLog[]>;
 }
