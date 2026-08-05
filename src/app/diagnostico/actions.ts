@@ -19,9 +19,12 @@ export type SaveDiagnosticResponse =
 
 export async function saveDiagnosticCase(payload: unknown): Promise<SaveDiagnosticResponse> {
   if (!isPrivateAreaConfigured()) {
+    console.error("private_area_not_configured", {
+      reason: "isPrivateAreaConfigured returned false, indicating either auth provider or application data is not configured correctly."
+    });
     return {
       success: false,
-      error: "La identidad o la base de datos todavía no están configuradas.",
+      error: "En este momento no podemos procesar tu solicitud debido a un problema de configuración en nuestros servidores. Por favor, inténtalo más tarde.",
       code: "not_configured"
     };
   }

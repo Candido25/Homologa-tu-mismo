@@ -23,7 +23,10 @@ export async function POST(request: Request) {
   }
 
   if (!isPrivateAreaConfigured()) {
-    return NextResponse.json({ error: "La identidad o la base de datos todavía no están configuradas." }, { status: 503 });
+    console.error("private_area_not_configured", {
+      reason: "isPrivateAreaConfigured returned false, indicating either auth provider or application data is not configured correctly."
+    });
+    return NextResponse.json({ error: "En este momento no podemos procesar tu solicitud debido a un problema de configuración en nuestros servidores. Por favor, inténtalo más tarde." }, { status: 503 });
   }
 
   let body: unknown;
