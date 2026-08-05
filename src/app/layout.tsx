@@ -65,7 +65,13 @@ export default function RootLayout({
               <strong>Homologa Tú Mismo</strong>
               <p>Una plataforma privada e independiente para preparar tu expediente.</p>
             </div>
-            <p className="legal-note">
+            <div className="flex flex-col gap-2 pt-2 md:pt-0">
+              <strong>Enlaces de interés</strong>
+              <Link href="/asistencia" className="text-surface/80 hover:text-white transition-colors">Centro de Soporte y FAQ</Link>
+              <Link href="/terminos" className="text-surface/80 hover:text-white transition-colors">Términos de Servicio</Link>
+              <Link href="/privacidad" className="text-surface/80 hover:text-white transition-colors">Política de Privacidad</Link>
+            </div>
+            <p className="legal-note md:col-span-2">
               No pertenecemos al Gobierno de España ni garantizamos la aprobación de solicitudes.
             </p>
           </div>

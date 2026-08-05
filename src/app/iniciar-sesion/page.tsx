@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getAuthProviderName, isAuthProviderConfigured } from "@/lib/env";
-import { signIn } from "@/app/auth/actions";
+import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión",
@@ -40,66 +39,13 @@ export default async function SignInPage({ searchParams }: PageProps) {
 
       <section className="section auth-section">
         <div className="container auth-layout">
-          <form className="form-card auth-card" action={signIn}>
-            <div className="auth-card-heading">
-              <span className="result-label">Panel privado</span>
-              <h2>Iniciar sesión</h2>
-            </div>
-            <p className="helper">
-              {isEntra
-                ? "Accede mediante el portal seguro de identidad."
-                : "Utiliza el correo con el que registraste tu expediente."}
-            </p>
-
-            {!configured && (
-              <div className="notice notice-warning" role="status">
-                La identidad de clientes todavía no está configurada para este entorno.
-              </div>
-            )}
-
-            {params.mensaje && (
-              <div className="notice notice-success" role="status">
-                {params.mensaje}
-              </div>
-            )}
-
-            {params.error && (
-              <div className="notice notice-error" role="alert">
-                {params.error}
-              </div>
-            )}
-
-            <input type="hidden" name="siguiente" value={params.siguiente || "/panel"} />
-
-            {!isEntra && (
-              <>
-                <div className="field">
-                  <label htmlFor="email">Correo electrónico</label>
-                  <input id="email" name="email" type="email" autoComplete="email" required />
-                </div>
-
-                <div className="field">
-                  <label htmlFor="password">Contraseña</label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    minLength={8}
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-              </>
-            )}
-
-            <button className="button auth-submit" type="submit" disabled={!configured}>
-              {isEntra ? "Continuar de forma segura" : "Entrar a mi panel"}
-            </button>
-
-            <p className="auth-switch">
-              ¿Todavía no tienes una cuenta? <Link href="/crear-cuenta">Crear cuenta</Link>
-            </p>
-          </form>
+          <SignInForm
+            isEntra={isEntra}
+            configured={configured}
+            siguiente={params.siguiente || "/panel"}
+            urlError={params.error}
+            urlMessage={params.mensaje}
+          />
 
           <aside className="auth-aside">
             <span className="result-label">Tu información, bajo control</span>
