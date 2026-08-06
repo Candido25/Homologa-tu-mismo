@@ -13,6 +13,7 @@ import type {
 } from "@/core/cases/case-repository";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { mapCaseSummary } from "./mapper";
 
 type SupabaseCaseRow = {
   id: string;
@@ -43,19 +44,6 @@ type SupabaseLogRow = {
   created_at: string;
 };
 
-function mapSummary(row: Pick<SupabaseCaseRow, "id" | "title" | "degree_name" | "procedure_type" | "status" | "tier" | "current_stage" | "updated_at">): CaseSummary {
-  return {
-    id: row.id,
-    title: row.title,
-    degreeName: row.degree_name,
-    procedureType: row.procedure_type,
-    status: row.status,
-    tier: row.tier || "FREE",
-    currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
-    updatedAt: row.updated_at,
-  };
-}
-
 export class SupabaseCaseRepository implements CaseRepository {
   async listRecentByUser(userId: string, limit: number): Promise<CaseSummary[]> {
     const supabase = await createClient();
@@ -68,7 +56,7 @@ export class SupabaseCaseRepository implements CaseRepository {
       .limit(safeLimit);
 
     if (error) throw new Error(`No se pudieron leer los expedientes: ${error.code}`);
-    return (data || []).map((row) => mapSummary(row as SupabaseCaseRow));
+    return (data || []).map((row) => mapCaseSummary(row as SupabaseCaseRow));
   }
 
   async getByIdForUser(caseId: string, userId: string): Promise<CaseDetail | null> {
@@ -87,7 +75,7 @@ export class SupabaseCaseRepository implements CaseRepository {
 
     const row = data as SupabaseCaseRow;
     return {
-      ...mapSummary(row),
+      ...mapCaseSummary(row),
       userId: row.user_id,
       originCountryCode: row.origin_country_code,
       institutionName: row.institution_name,
