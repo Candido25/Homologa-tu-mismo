@@ -176,9 +176,9 @@ export async function getCurrentEntraUser(): Promise<AuthenticatedUser | null> {
   const token = cookieStore.get(getAuthSessionCookieName())?.value;
   if (!token) return null;
 
-  const result = await query<IdentityRow & { role: "USER" | "ADVISOR" | "ADMIN" }>(
+  const result = await query<IdentityRow & { role?: "USER" | "ADVISOR" | "ADMIN" }>(
     [
-      "select u.id, u.role, i.email, p.display_name, i.provider, i.issuer, i.subject",
+      "select u.id, i.email, p.display_name, i.provider, i.issuer, i.subject",
       "from auth_sessions s",
       "join app_users u on u.id = s.user_id and u.status = 'active'",
       "join external_identities i on i.user_id = u.id and i.provider = 'entra'",
