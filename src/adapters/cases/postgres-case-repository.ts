@@ -10,6 +10,7 @@ import type {
   CreateCaseInput,
 } from "@/core/cases/case-repository";
 import { query, withTransaction } from "@/lib/postgres/pool";
+import { mapCaseSummary } from "./mapper";
 
 type CaseRow = {
   id: string;
@@ -48,19 +49,6 @@ function optionalIso(value: Date | string | null) {
   return value ? iso(value) : null;
 }
 
-function mapSummary(row: Pick<CaseRow, "id" | "title" | "degree_name" | "procedure_type" | "status" | "tier" | "current_stage" | "updated_at">): CaseSummary {
-  return {
-    id: row.id,
-    title: row.title,
-    degreeName: row.degree_name,
-    procedureType: row.procedure_type,
-    status: row.status,
-    tier: row.tier || "FREE",
-    currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
-    updatedAt: iso(row.updated_at),
-  };
-}
-
 export class PostgresCaseRepository implements CaseRepository {
   async listRecentByUser(userId: string, limit: number): Promise<CaseSummary[]> {
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 50);
@@ -75,7 +63,7 @@ export class PostgresCaseRepository implements CaseRepository {
       [userId, safeLimit],
     );
 
-    return result.rows.map(mapSummary);
+    return result.rows.map(mapCaseSummary);
   }
 
   async getByIdForUser(caseId: string, userId: string): Promise<CaseDetail | null> {
@@ -95,7 +83,7 @@ export class PostgresCaseRepository implements CaseRepository {
     if (!row) return null;
 
     return {
-      ...mapSummary(row),
+      ...mapCaseSummary(row),
       userId: row.user_id,
       originCountryCode: row.origin_country_code,
       institutionName: row.institution_name,
