@@ -8,16 +8,15 @@ Aplicación web orientada a ayudar a profesionales latinoamericanos a identifica
 
 ## Estado
 
-**Preparación Azure-first con control estricto de crédito.**
+**Transición activa a GitHub + Vercel + Supabase, con Azure conservado solo como histórico.**
 
 La versión actual incluye:
 
 - Página pública y diagnóstico preliminar.
 - Panel privado y expedientes construidos inicialmente sobre Supabase.
 - Modelo de datos para usuarios, expedientes, requisitos, documentos, revisiones y auditoría.
-- Infraestructura Azure descrita mediante Bicep y validada con `what-if` en Chile Central.
-- Presupuesto y alertas de consumo configurados en Azure for Students.
-- Azure for Students será la plataforma inicial de construcción, validación y demostración del emprendimiento, aprovechando el crédito disponible.
+- Arquitectura activa documentada en ADR-004: GitHub, Vercel y Supabase.
+- Documentación Azure conservada únicamente como antecedente histórico, no como camino operativo vigente.
 - Esquema PostgreSQL portable sin referencias a `auth.users` ni `auth.uid()`.
 - Entorno local reproducible con PostgreSQL y Azurite.
 - Contratos independientes del proveedor para identidad, expedientes y documentos.
@@ -36,12 +35,11 @@ Homologa Tú Mismo seguirá siendo un **monolito modular**. La primera etapa apr
 
 ```text
 Next.js 16 + React 19 + TypeScript
-├── Microsoft Entra External ID
-├── Azure Database for PostgreSQL Flexible Server
-├── Azure Blob Storage privado
-├── Azure Key Vault
-├── Application Insights y Azure Monitor
-└── GitHub Actions con OpenID Connect y aprobación manual
+├── Supabase Auth
+├── Supabase PostgreSQL
+├── Supabase Storage privado
+├── Vercel
+└── GitHub Actions
 ```
 
 La lógica de negocio no importará directamente SDK de Microsoft, Supabase ni otro proveedor. La aplicación utilizará fronteras portables:
@@ -52,22 +50,21 @@ La lógica de negocio no importará directamente SDK de Microsoft, Supabase ni o
 
 Las decisiones están documentadas en:
 
-- [`ADR-002 — Plataforma integral Azure`](docs/architecture/ADR-002-plataforma-integral-azure.md)
+- [`ADR-004 — GitHub + Vercel + Supabase sin Azure`](docs/architecture/ADR-004-vercel-supabase-sin-azure.md)
 - [`ADR-003 — Fronteras portables`](docs/architecture/ADR-003-fronteras-portables.md)
-- [`Preparación para el primer despliegue Azure`](docs/azure/pre-deployment-readiness.md)
+La documentación Azure se conserva como histórico.
 
 ## Regla de control de gasto
 
-Se permite preparar y validar infraestructura en Azure for Students siempre que se respeten estas reglas:
+Las capacidades todavía no autorizadas deben fallar cerradas:
 
-1. Usar primero los niveles gratuitos y SKU mínimos.
-2. Mantener presupuestos y alertas de consumo.
-3. No guardar secretos en GitHub ni en código.
-4. Probar con datos ficticios mientras no existan controles completos.
-5. Ejecutar `what-if` antes de crear o cambiar recursos costosos.
-6. Pasar a suscripción pagada cuando el producto maneje clientes, pagos o documentos reales sensibles.
-
-Los despliegues reales deben ser intencionales y revisados. El crédito estudiantil se tratará como capital inicial limitado del proyecto.
+1. documentos reales;
+2. OCR/IA externa;
+3. comunicaciones externas;
+4. pagos reales;
+5. revisión humana real;
+6. datos personales reales;
+7. PRD_2026.
 
 ## Desarrollo local sin Azure
 
@@ -80,12 +77,14 @@ Los despliegues reales deben ser intencionales y revisados. El crédito estudian
 ### Inicio
 
 ```bash
-npm install
+npm ci
 cp .env.example .env.local
 npm run local:up
 npm run db:migrate
 npm run db:seed
 npm run db:verify
+npm test
+npm run product:verify-controls
 npm run dev
 ```
 

@@ -29,27 +29,9 @@ export type DiagnosticResult = {
   explanation: string;
   nextSteps: string[];
   version: string;
+  sourceBasis: string;
+  requiresHumanReview: boolean;
 };
-
-const regulatedTerms = [
-  "ingeniería civil",
-  "ingenieria civil",
-  "arquitectura",
-  "medicina",
-  "enfermería",
-  "enfermeria",
-  "odontología",
-  "odontologia",
-  "farmacia",
-  "veterinaria",
-  "psicología sanitaria",
-  "psicologia sanitaria",
-  "educación",
-  "educacion",
-  "docente",
-  "abogacía",
-  "abogacia",
-];
 
 const objectiveValues = new Set<DiagnosticObjective>(["work", "study", "academic", "unknown"]);
 
@@ -91,9 +73,6 @@ export function parseDiagnosticInput(body: unknown):
 }
 
 export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
-  const normalizedDegree = input.degree.toLocaleLowerCase("es");
-  const appearsRegulated = regulatedTerms.some((term) => normalizedDegree.includes(term));
-
   if (input.objective === "study") {
     return {
       route: "Convalidación de estudios",
@@ -106,6 +85,8 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
         "Revisar los requisitos particulares de la universidad receptora.",
       ],
       version: DIAGNOSTIC_VERSION,
+      sourceBasis: "RD 889/2022 activo y reglas internas versionadas; sin proyecto normativo 2026.",
+      requiresHumanReview: true,
     };
   }
 
@@ -121,21 +102,25 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
         "Comparar tu objetivo con los efectos jurídicos de la equivalencia.",
       ],
       version: DIAGNOSTIC_VERSION,
+      sourceBasis: "RD 889/2022 activo y reglas internas versionadas; sin proyecto normativo 2026.",
+      requiresHumanReview: true,
     };
   }
 
-  if (input.objective === "work" && appearsRegulated) {
+  if (input.objective === "work") {
     return {
-      route: "Homologación probable",
-      procedureType: "homologation",
-      confidence: "media-alta",
-      explanation: `${input.degree} puede estar relacionado con una profesión regulada en España. Para ejercer, será necesario identificar la profesión española concreta a la que pretendes acceder y comparar tu formación.`,
+      route: "Revisión profesional requerida",
+      procedureType: "undetermined",
+      confidence: "pendiente de revisión",
+      explanation: `Para trabajar en España con ${input.degree} obtenido en ${input.countryName}, primero debe identificarse la profesión española concreta y sus efectos. La plataforma no clasifica jurídicamente por palabras del título extranjero.`,
       nextSteps: [
         "Identificar la profesión regulada española de referencia.",
         "Revisar si el certificado académico incluye duración, asignaturas y carga horaria.",
-        "Comprobar apostilla, identidad y demás documentos obligatorios.",
+        "Separar homologación, equivalencia, convalidación, reconocimiento profesional UE, empleo público y extranjería.",
       ],
       version: DIAGNOSTIC_VERSION,
+      sourceBasis: "RD 889/2022 activo y reglas internas versionadas; sin proyecto normativo 2026.",
+      requiresHumanReview: true,
     };
   }
 
@@ -150,6 +135,8 @@ export function evaluateDiagnostic(input: DiagnosticInput): DiagnosticResult {
       "Revisar el plan de estudios antes de elegir el procedimiento.",
     ],
     version: DIAGNOSTIC_VERSION,
+    sourceBasis: "RD 889/2022 activo y reglas internas versionadas; sin proyecto normativo 2026.",
+    requiresHumanReview: true,
   };
 }
 

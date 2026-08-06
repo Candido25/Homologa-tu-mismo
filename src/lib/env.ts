@@ -1,6 +1,7 @@
 const placeholderValues = new Set([
   "your-project-url",
   "your-publishable-key",
+  "your-anon-key",
   "your-service-role-key",
 ]);
 
@@ -33,7 +34,7 @@ export function getDatabaseProviderName(): DatabaseProviderName {
 export function getStorageProviderName(): StorageProviderName {
   const provider = value("STORAGE_PROVIDER");
   if (provider === "azurite" || provider === "azure-blob" || provider === "supabase") return provider;
-  return process.env.APP_ENV === "local" ? "azurite" : "azure-blob";
+  return process.env.APP_ENV === "local" ? "azurite" : "supabase";
 }
 
 export function isPortableDatabaseConfigured() {
@@ -127,7 +128,8 @@ export function getAzureBlobConfig() {
 export function isSupabaseConfigured() {
   return (
     isUsable(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-    isUsable(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    (isUsable(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
+      isUsable(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY))
   );
 }
 
@@ -138,7 +140,10 @@ export function getPublicSupabaseConfig() {
 
   return {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
-    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!.trim(),
+    publishableKey: (
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )!.trim(),
   };
 }
 

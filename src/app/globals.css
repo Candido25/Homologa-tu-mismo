@@ -79,6 +79,13 @@ select {
   font-weight: 800;
 }
 
+.brand-mark-image {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 8px;
+}
+
 .brand strong,
 .brand small {
   display: block;
@@ -728,7 +735,8 @@ select:focus {
     gap: 8px;
   }
 
-  .brand-mark {
+  .brand-mark,
+  .brand-mark-image {
     width: 40px;
     height: 40px;
     flex: 0 0 40px;

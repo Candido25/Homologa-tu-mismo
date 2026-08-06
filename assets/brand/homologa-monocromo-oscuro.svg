@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Homologa Tu Mismo monocromo oscuro</title>
+  <rect width="128" height="128" rx="24" fill="#162033"/>
+  <path d="M32 36h64v14H70v42H58V50H32V36Z" fill="#FFFFFF"/>
+  <path d="M34 78c11 13 22 19 34 19 13 0 23-6 31-19" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+</svg>

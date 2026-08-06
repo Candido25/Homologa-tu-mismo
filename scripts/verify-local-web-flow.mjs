@@ -38,7 +38,8 @@ const diagnostic = await json("/api/diagnostico", {
   }),
 });
 assert.equal(diagnostic.response.status, 200);
-assert.equal(diagnostic.data.procedureType, "homologation");
+assert.equal(diagnostic.data.procedureType, "undetermined");
+assert.equal(diagnostic.data.requiresHumanReview, true);
 
 const blockedCrossOrigin = await json("/api/expedientes", {
   method: "POST",
@@ -54,6 +55,18 @@ const blockedCrossOrigin = await json("/api/expedientes", {
 });
 assert.equal(blockedCrossOrigin.response.status, 403);
 
+const createdCase = await json("/api/expedientes", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    country: "PE",
+    degree: `Titulo ficticio E2E ${Date.now()}`,
+    objective: "work",
+  }),
+});
+assert.equal(createdCase.response.status, 201);
+assert.match(createdCase.data.id, /^[0-9a-f-]{36}$/i);
+
 const panel = await request("/panel");
 assert.equal(panel.response.status, 200);
 assert.match(panel.text, /Usuario ficticio A/);
@@ -64,7 +77,7 @@ const ownCase = await request(`/panel/expedientes/${fixtures.caseA}`);
 assert.equal(ownCase.response.status, 200);
 assert.match(ownCase.text, /Ingeniería de prueba|Ingenier/);
 assert.match(ownCase.text, /Archivos del expediente/);
-assert.match(ownCase.text, /Carga local habilitada para archivos ficticios/);
+assert.match(ownCase.text, /Formatos: PDF, JPG, PNG/);
 
 const foreignCase = await request(`/panel/expedientes/${fixtures.caseB}`);
 assert.equal(foreignCase.response.status, 404);
