@@ -10,6 +10,7 @@ import type {
   CreateCaseInput,
 } from "@/core/cases/case-repository";
 import { query, withTransaction } from "@/lib/postgres/pool";
+import { mapSummary } from "./utils/case-mapper";
 
 type CaseRow = {
   id: string;
@@ -46,19 +47,6 @@ function iso(value: Date | string) {
 
 function optionalIso(value: Date | string | null) {
   return value ? iso(value) : null;
-}
-
-function mapSummary(row: Pick<CaseRow, "id" | "title" | "degree_name" | "procedure_type" | "status" | "tier" | "current_stage" | "updated_at">): CaseSummary {
-  return {
-    id: row.id,
-    title: row.title,
-    degreeName: row.degree_name,
-    procedureType: row.procedure_type,
-    status: row.status,
-    tier: row.tier || "FREE",
-    currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
-    updatedAt: iso(row.updated_at),
-  };
 }
 
 export class PostgresCaseRepository implements CaseRepository {
