@@ -25,7 +25,7 @@ export class DocumentRetentionService {
       failed: 0,
     };
 
-    for (const document of candidates) {
+    const promises = candidates.map(async (document) => {
       try {
         await this.storage.delete(document.storage);
         const marked = await this.documents.markDeleted(
@@ -34,15 +34,25 @@ export class DocumentRetentionService {
           document.userId,
           "retention",
         );
-        if (marked) result.deleted += 1;
-        else result.skipped += 1;
+        return { success: true, marked, document };
       } catch (error) {
-        result.failed += 1;
         console.error("document_retention_delete_failed", {
           caseId: document.caseId,
           documentId: document.id,
           message: error instanceof Error ? error.message : "unknown",
         });
+        return { success: false, error, document };
+      }
+    });
+
+    const outcomes = await Promise.all(promises);
+
+    for (const outcome of outcomes) {
+      if (outcome.success) {
+        if (outcome.marked) result.deleted += 1;
+        else result.skipped += 1;
+      } else {
+        result.failed += 1;
       }
     }
 

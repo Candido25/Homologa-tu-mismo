@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { deleteCaseDocument } from "@/app/panel/expedientes/[id]/actions";
 import {
   getCurrentUserProvider,
   getDocumentService,
@@ -8,6 +9,11 @@ import {
 type RouteContext = {
   params: Promise<{ id: string; documentId: string }>;
 };
+
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
 
 function unavailable() {
   return NextResponse.json(
@@ -60,4 +66,23 @@ export async function GET(_request: Request, context: RouteContext) {
       { status: 500 },
     );
   }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
+  }
+
+  const { id, documentId } = await context.params;
+
+  const response = await deleteCaseDocument(id, documentId);
+
+  if (response.success) {
+    return new Response(null, { status: 204 });
+  }
+
+  const status = response.code === "not_found" ? 404 :
+                 response.code === "unauthenticated" ? 401 : 500;
+
+  return NextResponse.json({ error: response.error }, { status });
 }
