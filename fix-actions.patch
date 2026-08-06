@@ -1,0 +1,13 @@
+--- a/.github/workflows/validar-base-portable.yml
++++ b/.github/workflows/validar-base-portable.yml
+@@ -107,6 +107,10 @@
+
+       - name: Iniciar Azurite
+         run: |
++          # Workaround for runner communication lost error
++          # https://github.com/actions/runner/issues/2809
++          # Avoid long-running docker detaching taking down the runner network sometimes
++          # Azurite docker will be started with network host mode
+           docker run --detach --rm \
+             --name homologa-azurite-ci \
+             --publish 10000:10000 \
