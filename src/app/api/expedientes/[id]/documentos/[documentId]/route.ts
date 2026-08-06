@@ -24,6 +24,11 @@ function contentDisposition(filename: string) {
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
 
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   if (!isDocumentFlowConfigured()) return unavailable();
 
@@ -57,6 +62,36 @@ export async function GET(_request: Request, context: RouteContext) {
     });
     return NextResponse.json(
       { error: "No pudimos recuperar el documento." },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
+  }
+
+  if (!isDocumentFlowConfigured()) return unavailable();
+
+  const user = await getCurrentUserProvider().getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const { id: caseId, documentId } = await context.params;
+
+  try {
+    await getDocumentService().delete(documentId, caseId, user.id);
+    return new Response(null, { status: 204 });
+  } catch (error: any) {
+    console.error("document_delete_failed", {
+      caseId,
+      documentId,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    return NextResponse.json(
+      { error: "No pudimos eliminar el documento." },
       { status: 500 },
     );
   }
