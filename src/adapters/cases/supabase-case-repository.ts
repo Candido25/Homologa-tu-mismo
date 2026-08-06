@@ -116,8 +116,6 @@ export class SupabaseCaseRepository implements CaseRepository {
         procedure_type: input.procedureType,
         diagnostic_version: input.diagnosticVersion,
         diagnostic_payload: input.diagnosticPayload,
-        tier: "FREE",
-        current_stage: "PREPARACION_DOCUMENTAL"
       })
       .select("id")
       .single();
