@@ -9,6 +9,11 @@ type RouteContext = {
   params: Promise<{ id: string; documentId: string }>;
 };
 
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
+
 function unavailable() {
   return NextResponse.json(
     { error: "El flujo documental privado todavía no está configurado." },
@@ -57,6 +62,39 @@ export async function GET(_request: Request, context: RouteContext) {
     });
     return NextResponse.json(
       { error: "No pudimos recuperar el documento." },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
+  }
+
+  if (!isDocumentFlowConfigured()) return unavailable();
+
+  const user = await getCurrentUserProvider().getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const { id: caseId, documentId } = await context.params;
+
+  try {
+    await getDocumentService().delete(documentId, caseId, user.id);
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("document_delete_failed", {
+      caseId,
+      documentId,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    if (error instanceof Error && error.message.includes("permiso")) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+    return NextResponse.json(
+      { error: "No pudimos eliminar el documento." },
       { status: 500 },
     );
   }
