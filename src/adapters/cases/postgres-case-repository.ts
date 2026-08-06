@@ -135,10 +135,10 @@ export class PostgresCaseRepository implements CaseRepository {
     return { id: result.rows[0].id };
   }
 
-  async updateTier(caseId: string, tier: CaseTier): Promise<void> {
+  async updateTier(caseId: string, userId: string, tier: CaseTier): Promise<void> {
      await query(
-      "update cases set tier = $1, updated_at = now() where id = $2",
-      [tier, caseId]
+      "update cases set tier = $1, updated_at = now() where id = $2 and user_id = $3",
+      [tier, caseId, userId]
     );
   }
 
