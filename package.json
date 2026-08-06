@@ -6,6 +6,7 @@
     "node": ">=22 <23"
   },
   "scripts": {
+    "test": "jest",
     "dev": "next dev",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
@@ -37,6 +38,7 @@
     "react-dom": "19.2.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/pg": "8.20.0",
     "@types/react": "^19.0.0",
@@ -44,8 +46,28 @@
     "autoprefixer": "^10.5.4",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.2.12",
+    "jest": "^30.4.2",
     "postcss": "^8.5.25",
+    "server-only": "^0.0.1",
     "tailwindcss": "^3.4.19",
+    "ts-jest": "^29.4.12",
     "typescript": "^5.9.3"
-  }
+  },
+  "description": "**Tu título, tu trámite, nuestra guía.**",
+  "main": "postcss.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Candido25/Homologa-tu-mismo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Candido25/Homologa-tu-mismo/issues"
+  },
+  "homepage": "https://github.com/Candido25/Homologa-tu-mismo#readme"
 }
