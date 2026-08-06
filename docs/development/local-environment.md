@@ -14,10 +14,28 @@ Este entorno permite desarrollar y probar Homologa Tú Mismo sin crear recursos 
 
 1. Node.js 22.
 2. Git.
-3. Docker Desktop con Docker Compose v2.
+3. Docker Desktop con Docker Compose v2, o PostgreSQL 16 instalado localmente.
 4. Puertos locales libres: `3000`, `5432`, `10000`, `10001` y `10002`.
 
 No se necesita Azure CLI, una suscripción de Azure ni credenciales de Supabase para levantar los servicios locales.
+
+### PostgreSQL local sin Docker en Windows
+
+Cuando Docker no este disponible, instala PostgreSQL 16 y prepara la base local con:
+
+```powershell
+npm run postgres:setup-local
+npm run db:migrate:portable
+npm run db:migrate:portable
+npm run db:seed:portable
+npm run db:verify:portable
+npm run security:verify-local
+```
+
+El script `postgres:setup-local` usa por defecto `C:\Program Files\PostgreSQL\16\bin`,
+agrega esa carpeta al PATH de usuario si falta, verifica `psql`, crea o actualiza el rol
+`homologa`, crea la base `homologa` y conserva la contraseña local ficticia
+`homologa_local_only`. No debe reutilizarse fuera del entorno local.
 
 ## Preparación inicial
 
