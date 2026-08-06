@@ -82,10 +82,18 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Aplicar migración portable
-        run: psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0002_auth_sessions.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0004_case_timeline.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0005_user_roles.sql
 
       - name: Comprobar idempotencia
-        run: psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0001_portable_core.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0002_auth_sessions.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0004_case_timeline.sql
+          psql -v ON_ERROR_STOP=1 -f database/migrations/0005_user_roles.sql
 
       - name: Cargar referencias y datos ficticios
         run: |
