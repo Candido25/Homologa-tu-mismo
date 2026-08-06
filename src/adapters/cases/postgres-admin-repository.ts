@@ -15,8 +15,8 @@ type AdminCaseRow = {
   objective: CaseDetail["objective"];
   procedure_type: CaseProcedureType;
   status: CaseStatus;
-  tier: CaseTier;
-  current_stage: CaseStage;
+  tier?: CaseTier;
+  current_stage?: CaseStage;
   diagnostic_version: string | null;
   diagnostic_payload: unknown;
   official_case_number: string | null;
@@ -40,7 +40,7 @@ export class PostgresAdminRepository implements AdminCaseRepository {
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
     const result = await query<AdminCaseRow>(
       [
-        "select c.id, c.user_id, c.title, c.degree_name, c.procedure_type, c.status, c.tier, c.current_stage, c.updated_at, p.display_name, i.email",
+        "select c.id, c.user_id, c.title, c.degree_name, c.procedure_type, c.status, c.updated_at, p.display_name, i.email",
         "from cases c",
         "left join profiles p on p.id = c.user_id",
         "left join external_identities i on i.user_id = c.user_id",
@@ -56,8 +56,8 @@ export class PostgresAdminRepository implements AdminCaseRepository {
       degreeName: row.degree_name,
       procedureType: row.procedure_type,
       status: row.status,
-      tier: row.tier || "FREE",
-      currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
+      tier: "FREE",
+      currentStage: "PREPARACION_DOCUMENTAL",
       updatedAt: iso(row.updated_at),
       userId: row.user_id,
       userName: row.display_name,
@@ -87,8 +87,8 @@ export class PostgresAdminRepository implements AdminCaseRepository {
       degreeName: row.degree_name,
       procedureType: row.procedure_type,
       status: row.status,
-      tier: row.tier || "FREE",
-      currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
+      tier: "FREE",
+      currentStage: "PREPARACION_DOCUMENTAL",
       updatedAt: iso(row.updated_at),
       userId: row.user_id,
       originCountryCode: row.origin_country_code,
