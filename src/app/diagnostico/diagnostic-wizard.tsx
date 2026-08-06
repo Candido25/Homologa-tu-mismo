@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { COUNTRY_OPTIONS, type DiagnosticObjective, type DiagnosticResult, type DocumentStatusType } from "@/modules/diagnostics/evaluate";
 import { saveDiagnosticCase } from "./actions";
 
@@ -25,6 +25,25 @@ export function DiagnosticWizard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const pending = window.sessionStorage.getItem("homologa-pending-diagnostic");
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending);
+        if (parsed.input && parsed.result) {
+          // Usamos requestAnimationFrame para evitar el warning de cascading renders
+          requestAnimationFrame(() => {
+            setForm(parsed.input);
+            setResult(parsed.result);
+            setStep(4);
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse pending diagnostic", e);
+      }
+    }
+  }, []);
 
   function nextStep() {
     setError("");
