@@ -1,0 +1,13 @@
+<<<<<<< SEARCH
+      procedureType: row.procedure_type,
+      status: row.status,
+      tier: row.tier || "FREE",
+      currentStage: row.current_stage || "PREPARACION_DOCUMENTAL",
+      updatedAt: iso(row.updated_at),
+=======
+      procedureType: row.procedure_type,
+      status: row.status,
+      tier: "FREE",
+      currentStage: "PREPARACION_DOCUMENTAL",
+      updatedAt: iso(row.updated_at),
+>>>>>>> REPLACE

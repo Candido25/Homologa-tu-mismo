@@ -11,11 +11,11 @@ type IdentityRow = {
   provider: string;
   issuer: string;
   subject: string;
-  role: "USER" | "ADVISOR" | "ADMIN";
+  role?: "USER" | "ADVISOR" | "ADMIN";
 };
 
 const identitySql = [
-  "select u.id, u.role, i.email, p.display_name, i.provider, i.issuer, i.subject",
+  "select u.id, i.email, p.display_name, i.provider, i.issuer, i.subject",
   "from app_users u",
   "join external_identities i on i.user_id = u.id",
   "left join profiles p on p.id = u.id",

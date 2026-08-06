@@ -1,0 +1,9 @@
+<<<<<<< SEARCH
+const identitySql = [
+  "select u.id, u.role, i.email, p.display_name, i.provider, i.issuer, i.subject",
+  "from app_users u",
+=======
+const identitySql = [
+  "select u.id, i.email, p.display_name, i.provider, i.issuer, i.subject",
+  "from app_users u",
+>>>>>>> REPLACE

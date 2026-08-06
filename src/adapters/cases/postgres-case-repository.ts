@@ -22,8 +22,8 @@ type CaseRow = {
   objective: CaseDetail["objective"];
   procedure_type: CaseDetail["procedureType"];
   status: CaseDetail["status"];
-  tier: CaseTier;
-  current_stage: CaseStage;
+  tier?: CaseTier;
+  current_stage?: CaseStage;
   diagnostic_version: string | null;
   diagnostic_payload: unknown;
   official_case_number: string | null;
@@ -66,7 +66,7 @@ export class PostgresCaseRepository implements CaseRepository {
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 50);
     const result = await query<CaseRow>(
       [
-        "select id, title, degree_name, procedure_type, status, tier, current_stage, updated_at",
+        "select id, title, degree_name, procedure_type, status, updated_at",
         "from cases",
         "where user_id = $1",
         "order by updated_at desc",
@@ -82,7 +82,7 @@ export class PostgresCaseRepository implements CaseRepository {
     const result = await query<CaseRow>(
       [
         "select id, user_id, title, degree_name, origin_country_code, institution_name,",
-        "profession_code, objective, procedure_type, status, tier, current_stage, diagnostic_version,",
+        "profession_code, objective, procedure_type, status, diagnostic_version,",
         "diagnostic_payload, official_case_number, submitted_at, created_at, updated_at",
         "from cases",
         "where id = $1 and user_id = $2",
@@ -114,8 +114,8 @@ export class PostgresCaseRepository implements CaseRepository {
       [
         "insert into cases (",
         "user_id, title, origin_country_code, degree_name, institution_name,",
-        "profession_code, objective, procedure_type, diagnostic_version, diagnostic_payload, tier, current_stage",
-        ") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'FREE', 'PREPARACION_DOCUMENTAL')",
+        "profession_code, objective, procedure_type, diagnostic_version, diagnostic_payload",
+        ") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         "returning id",
       ].join(" "),
       [
