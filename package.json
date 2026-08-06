@@ -52,21 +52,5 @@
     "tailwindcss": "^3.4.19",
     "ts-jest": "^29.4.12",
     "typescript": "^5.9.3"
-  },
-  "description": "**Tu título, tu trámite, nuestra guía.**",
-  "main": "postcss.config.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Candido25/Homologa-tu-mismo.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Candido25/Homologa-tu-mismo/issues"
-  },
-  "homepage": "https://github.com/Candido25/Homologa-tu-mismo#readme"
+  }
 }
