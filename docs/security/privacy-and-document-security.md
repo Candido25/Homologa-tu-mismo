@@ -27,8 +27,8 @@ Este documento define requisitos técnicos iniciales. No sustituye el análisis 
 
 ### Residencia y proveedores
 
-- Crear Render en Frankfurt.
-- Crear Supabase en una región de la Unión Europea.
+- Desplegar la aplicación en Vercel.
+- Crear Supabase en una región compatible con la estrategia de privacidad aprobada.
 - Revisar contrato, DPA, subencargados, ubicación de procesamiento y mecanismos de transferencia de cada proveedor.
 - No asumir que elegir una región europea resuelve por sí sola el cumplimiento del RGPD.
 
@@ -86,7 +86,7 @@ El usuario deberá poder solicitar la eliminación de su cuenta y expediente. El
 
 La implementación portable asigna vencimiento al cargar, elimina blobs vencidos mediante un proceso interno autenticado y registra únicamente identificadores técnicos y la fuente `retention`. Este comportamiento se prueba con archivos ficticios en local y CI.
 
-En Azure, el proceso diario queda preparado con OIDC y un token almacenado en Key Vault. La fecha de vencimiento retira el documento del flujo normal; Blob Soft Delete conserva el objeto eliminado durante 30 días adicionales para recuperación operativa y después lo elimina definitivamente. Esta ventana debe comunicarse al usuario y no puede ampliarse sin revisión de privacidad.
+La preparación histórica de Azure queda como antecedente, no como arquitectura activa. En Vercel/Supabase se debe verificar retención, recuperación operativa, alertas y comunicación al usuario antes de abrir documentos reales.
 
 ## Evaluación de impacto
 
@@ -107,16 +107,16 @@ Antes de habilitar análisis documental para usuarios reales se debe realizar un
 ## Controles previos al lanzamiento
 
 - [ ] Repositorio privado o sin secretos ni información de usuarios.
-- [ ] Supabase creado en región europea.
+- [ ] Supabase creado en región compatible con la estrategia de privacidad aprobada.
 - [ ] RLS probada con al menos dos usuarios distintos.
 - [ ] Bucket privado y políticas probadas.
-- [ ] Variables secretas configuradas en Render.
+- [ ] Variables secretas configuradas en Vercel y Supabase, nunca en el cliente.
 - [ ] MFA para administradores.
 - [ ] Política de privacidad y términos publicados.
 - [ ] Contratos/DPA revisados.
 - [ ] Plan de respuesta a incidentes.
 - [x] Eliminación y retención probadas con archivos ficticios en local y CI.
-- [x] Automatización Azure y prueba de recuperación preparadas sin secretos permanentes en GitHub.
-- [ ] Retención, recuperación y alertas ejecutadas en el entorno Azure desplegado.
+- [x] Automatización histórica Azure y prueba de recuperación conservadas sin secretos permanentes en GitHub.
+- [ ] Retención, recuperación y alertas verificadas en el entorno Vercel/Supabase desplegado.
 - [ ] IA desactivable mediante configuración.
 - [ ] Evaluación de impacto completada antes de análisis documental real.

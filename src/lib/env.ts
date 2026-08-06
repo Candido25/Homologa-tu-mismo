@@ -33,7 +33,7 @@ export function getDatabaseProviderName(): DatabaseProviderName {
 export function getStorageProviderName(): StorageProviderName {
   const provider = value("STORAGE_PROVIDER");
   if (provider === "azurite" || provider === "azure-blob" || provider === "supabase") return provider;
-  return process.env.APP_ENV === "local" ? "azurite" : "azure-blob";
+  return process.env.APP_ENV === "local" ? "azurite" : "supabase";
 }
 
 export function isPortableDatabaseConfigured() {

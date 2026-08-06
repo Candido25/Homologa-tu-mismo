@@ -1,31 +1,60 @@
-name: Validar aplicación
+name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - codex/transicion-vercel-supabase
   pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: homologa
+          POSTGRES_USER: homologa
+          POSTGRES_PASSWORD: homologa_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U homologa -d homologa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v5
+    env:
+      APP_ENV: local
+      AUTH_PROVIDER: local-test
+      DATABASE_PROVIDER: postgres
+      STORAGE_PROVIDER: azurite
+      LOCAL_TEST_USER_ID: 00000000-0000-4000-8000-000000000001
+      DATABASE_URL: postgresql://homologa:homologa_local_only@localhost:5432/homologa
+      DOCUMENT_UPLOAD_UI_ENABLED: "false"
+      FEATURE_REAL_DOCUMENTS_ENABLED: "false"
+      FEATURE_EXTERNAL_OCR_AI_ENABLED: "false"
+      FEATURE_EXTERNAL_COMMUNICATIONS_ENABLED: "false"
+      FEATURE_REAL_PAYMENTS_ENABLED: "false"
+      FEATURE_REAL_HUMAN_REVIEW_ENABLED: "false"
+      FEATURE_REAL_PERSONAL_DATA_ENABLED: "false"
+      FEATURE_PRD_2026_ENABLED: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Instalar dependencias
-        run: npm install --no-audit --no-fund
-
-      - name: Verificar TypeScript
-        run: npm run typecheck
-
-      - name: Compilar aplicación
-        run: npm run build
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run db:migrate:portable
+      - run: npm run db:migrate:portable
+      - run: npm run db:seed:portable
+      - run: npm run product:verify-controls
+      - run: npm run security:scan-secrets
+      - run: git diff --check
