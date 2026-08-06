@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 import "./auth-dashboard.css";
@@ -11,6 +12,9 @@ export const metadata: Metadata = {
   },
   description:
     "Tu título, tu trámite, nuestra guía. Prepara tu expediente de homologación en España paso a paso.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -24,7 +28,14 @@ export default function RootLayout({
         <header className="site-header">
           <div className="container header-inner">
             <Link className="brand" href="/" aria-label="Homologa Tú Mismo, inicio">
-              <span className="brand-mark">HT</span>
+              <Image
+                className="brand-mark-image"
+                src="/brand/homologa-isotipo.svg"
+                alt=""
+                width={44}
+                height={44}
+                priority
+              />
               <span>
                 <strong>Homologa Tú Mismo</strong>
                 <small>Tu título, tu trámite, nuestra guía.</small>
