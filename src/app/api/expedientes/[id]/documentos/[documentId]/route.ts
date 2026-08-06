@@ -24,6 +24,11 @@ function contentDisposition(filename: string) {
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
 
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   if (!isDocumentFlowConfigured()) return unavailable();
 
@@ -63,6 +68,10 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
+  }
+
   if (!isDocumentFlowConfigured()) return unavailable();
 
   const user = await getCurrentUserProvider().getCurrentUser();

@@ -5,7 +5,16 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
+
 export async function POST(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen de solicitud no permitido." }, { status: 403 });
+  }
+
   const { id: caseId } = await context.params;
   const formData = await request.formData();
 
