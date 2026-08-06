@@ -23,7 +23,8 @@
     "retention:verify-local": "node scripts/verify-local-retention.mjs",
     "azure:verify-recovery": "node scripts/verify-azure-document-recovery.mjs",
     "security:verify-local": "node scripts/verify-local-isolation.mjs",
-    "storage:verify": "node scripts/verify-azurite.mjs"
+    "storage:verify": "node scripts/verify-azurite.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@azure/identity": "4.13.0",
@@ -41,11 +42,13 @@
     "@types/pg": "8.20.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.5.4",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.2.12",
     "postcss": "^8.5.25",
     "tailwindcss": "^3.4.19",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }
