@@ -84,7 +84,7 @@ export interface CaseRepository {
   listRecentByUser(userId: string, limit: number): Promise<CaseSummary[]>;
   getByIdForUser(caseId: string, userId: string): Promise<CaseDetail | null>;
   create(input: CreateCaseInput): Promise<{ id: string }>;
-  updateTier(caseId: string, tier: CaseTier): Promise<void>;
+  updateTier(caseId: string, userId: string, tier: CaseTier): Promise<void>;
   updateStage(caseId: string, userId: string, newStage: CaseStage, note?: string): Promise<void>;
   addLogEntry(caseId: string, userId: string, title: string, description: string): Promise<void>;
   getTimeline(caseId: string, userId: string): Promise<CaseActivityLog[]>;

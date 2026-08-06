@@ -129,7 +129,7 @@ export class SupabaseCaseRepository implements CaseRepository {
     return { id: data.id };
   }
 
-  async updateTier(caseId: string, tier: CaseTier): Promise<void> {
+  async updateTier(caseId: string, userId: string, tier: CaseTier): Promise<void> {
     // We use a service role client here since this is triggered by a webhook (no user context)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -142,7 +142,8 @@ export class SupabaseCaseRepository implements CaseRepository {
     const { error } = await supabase
       .from("cases")
       .update({ tier })
-      .eq("id", caseId);
+      .eq("id", caseId)
+      .eq("user_id", userId);
 
     if (error) throw new Error(`No se pudo actualizar el tier del expediente: ${error.code}`);
   }
