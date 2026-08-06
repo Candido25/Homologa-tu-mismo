@@ -65,7 +65,7 @@ function resolveCountry(value: string) {
 export function parseDiagnosticInput(body: unknown):
   | { ok: true; input: DiagnosticInput }
   | { ok: false; error: string } {
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return { ok: false, error: "La solicitud enviada no es válida." };
   }
 
