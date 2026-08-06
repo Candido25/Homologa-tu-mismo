@@ -53,13 +53,18 @@ const regulatedTerms = [
 
 const objectiveValues = new Set<DiagnosticObjective>(["work", "study", "academic", "unknown"]);
 
+const countryByCode = new Map<string, typeof COUNTRY_OPTIONS[number]>();
+const countryByName = new Map<string, typeof COUNTRY_OPTIONS[number]>();
+for (const country of COUNTRY_OPTIONS) {
+  countryByCode.set(country.code, country);
+  countryByName.set(country.name.toLocaleLowerCase("es"), country);
+}
+
 function resolveCountry(value: string) {
   const normalized = value.trim();
-  const byCode = COUNTRY_OPTIONS.find((country) => country.code === normalized.toUpperCase());
-  const byName = COUNTRY_OPTIONS.find(
-    (country) => country.name.toLocaleLowerCase("es") === normalized.toLocaleLowerCase("es"),
-  );
-  return byCode ?? byName;
+  const byCode = countryByCode.get(normalized.toUpperCase());
+  if (byCode) return byCode;
+  return countryByName.get(normalized.toLocaleLowerCase("es"));
 }
 
 export function parseDiagnosticInput(body: unknown):
