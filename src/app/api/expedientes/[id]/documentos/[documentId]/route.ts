@@ -61,3 +61,42 @@ export async function GET(_request: Request, context: RouteContext) {
     );
   }
 }
+
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Origen no permitido." }, { status: 403 });
+  }
+
+  if (!isDocumentFlowConfigured()) return unavailable();
+
+  const user = await getCurrentUserProvider().getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const { id: caseId, documentId } = await context.params;
+
+  try {
+    const deleted = await getDocumentService().delete(documentId, caseId, user.id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Documento no encontrado." }, { status: 404 });
+    }
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error("document_delete_api_failed", {
+      caseId,
+      documentId,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    return NextResponse.json(
+      { error: "No pudimos eliminar el documento." },
+      { status: 500 },
+    );
+  }
+}
