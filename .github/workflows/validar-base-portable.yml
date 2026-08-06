@@ -106,14 +106,14 @@ jobs:
         run: |
           docker run --detach --rm \
             --name homologa-azurite-ci \
-            --publish 10000:10000 \
+            --network host \
             mcr.microsoft.com/azure-storage/azurite:3.36.0 \
             azurite-blob \
-            --blobHost 0.0.0.0 \
+            --blobHost 127.0.0.1 \
             --skipApiVersionCheck \
             --disableTelemetry
           for attempt in $(seq 1 30); do
-            if curl --silent --output /dev/null http://localhost:10000/devstoreaccount1; then
+            if curl --silent --output /dev/null http://127.0.0.1:10000/devstoreaccount1; then
               exit 0
             fi
             sleep 1
@@ -121,9 +121,13 @@ jobs:
           docker logs homologa-azurite-ci
           exit 1
 
+      - name: Verificar tipos
+        run: npm run typecheck
+
       - name: Iniciar aplicación local
         run: |
-          npm run dev > /tmp/homologa-next.log 2>&1 &
+          npm run build
+          npm run start > /tmp/homologa-next.log 2>&1 &
           for attempt in $(seq 1 40); do
             if curl --fail --silent http://localhost:3000/api/health > /dev/null; then
               exit 0
@@ -138,9 +142,6 @@ jobs:
           npm run storage:verify
           npm run documents:verify-local
           npm run retention:verify-local
-
-      - name: Verificar tipos
-        run: npm run typecheck
 
       - name: Rechazar documento con propietario incorrecto
         shell: bash
