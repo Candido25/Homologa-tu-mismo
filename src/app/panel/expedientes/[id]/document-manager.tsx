@@ -62,9 +62,12 @@ export function DocumentManager({
 
   const sortedDocuments = useMemo(
     () =>
-      [...documents].sort(
-        (left, right) =>
-          new Date(right.uploadedAt).getTime() - new Date(left.uploadedAt).getTime(),
+      [...documents].sort((left, right) =>
+        right.uploadedAt > left.uploadedAt
+          ? 1
+          : right.uploadedAt < left.uploadedAt
+            ? -1
+            : 0,
       ),
     [documents],
   );
